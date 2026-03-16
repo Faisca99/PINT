@@ -51,7 +51,7 @@ CREATE EXTENSION IF NOT EXISTS unaccent;
 -- ============================================================
 
 -- Estado da conta do utilizador
-CREATE TYPE IF NOT EXISTS account_status_t AS ENUM (
+CREATE TYPE account_status_t AS ENUM (
     'pending_confirmation', -- aguarda confirmação de email (req 1)
     'active',
     'inactive',
@@ -59,14 +59,14 @@ CREATE TYPE IF NOT EXISTS account_status_t AS ENUM (
 );
 
 -- Tipo de badge (req 8 / req 14)
-CREATE TYPE IF NOT EXISTS badge_type_t AS ENUM (
+CREATE TYPE badge_type_t AS ENUM (
     'level',    -- badge de nível A-E
     'special',  -- conquista especial automática
     'premium'   -- certificação paga ou badge de topo
 );
 
 -- Estados do workflow de candidatura (req 6)
-CREATE TYPE IF NOT EXISTS application_status_t AS ENUM (
+CREATE TYPE application_status_t AS ENUM (
     'open',           -- criada, não submetida
     'submitted',      -- submetida; aguarda Talent Manager
     'in_validation',  -- TM validou; aguarda Service Line Leader
@@ -74,19 +74,19 @@ CREATE TYPE IF NOT EXISTS application_status_t AS ENUM (
 );
 
 -- Resultado final da candidatura (req 6)
-CREATE TYPE IF NOT EXISTS application_result_t AS ENUM (
+CREATE TYPE application_result_t AS ENUM (
     'approved',
     'rejected'
 );
 
 -- Tipo de revisor no workflow
-CREATE TYPE IF NOT EXISTS reviewer_type_t AS ENUM (
+CREATE TYPE reviewer_type_t AS ENUM (
     'talent_manager',
     'service_line_leader'
 );
 
 -- Decisão tomada numa revisão
-CREATE TYPE IF NOT EXISTS review_decision_t AS ENUM (
+CREATE TYPE review_decision_t AS ENUM (
     'forward',    -- TM → envia para SL Leader
     'send_back',  -- devolve ao consultor com comentário
     'approve',    -- SL Leader → aprova badge
@@ -94,7 +94,7 @@ CREATE TYPE IF NOT EXISTS review_decision_t AS ENUM (
 );
 
 -- Tipos de notificação in-app (req 20)
-CREATE TYPE IF NOT EXISTS notification_type_t AS ENUM (
+CREATE TYPE notification_type_t AS ENUM (
     'application_submitted',
     'application_forwarded',
     'application_approved',
@@ -111,7 +111,7 @@ CREATE TYPE IF NOT EXISTS notification_type_t AS ENUM (
 );
 
 -- Tipo de transação de pontos (req 13)
-CREATE TYPE IF NOT EXISTS points_tx_type_t AS ENUM (
+CREATE TYPE points_tx_type_t AS ENUM (
     'badge_award',
     'achievement_bonus',
     'manual_credit',
@@ -119,20 +119,20 @@ CREATE TYPE IF NOT EXISTS points_tx_type_t AS ENUM (
 );
 
 -- Scope do SLA (bonus admin)
-CREATE TYPE IF NOT EXISTS sla_team_t AS ENUM (
+CREATE TYPE sla_team_t AS ENUM (
     'talent_manager',
     'service_line_leader'
 );
 
 -- Plataformas de partilha (req 11 + bonus 12)
-CREATE TYPE IF NOT EXISTS share_platform_t AS ENUM (
+CREATE TYPE share_platform_t AS ENUM (
     'linkedin',
     'email_signature',
     'other'
 );
 
 -- Integrações externas (bonus Teams/Slack)
-CREATE TYPE IF NOT EXISTS integration_provider_t AS ENUM (
+CREATE TYPE integration_provider_t AS ENUM (
     'teams',
     'slack',
     'webhook'
