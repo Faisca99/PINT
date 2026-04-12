@@ -1,0 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+
+
+
+
+
+
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 220 40% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 40% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 40% 13%;
+
+    --primary: 217 71% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 25% 92%;
+    --secondary-foreground: 220 40% 13%;
+
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 46%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 220 13% 89%;
+    --input: 220 13% 89%;
+    --ring: 217 71% 28%;
+
+    --radius: 0.625rem;
+
+    --sidebar-background: 220 40% 13%;
+    --sidebar-foreground: 220 15% 85%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 35% 18%;
+    --sidebar-accent-foreground: 220 15% 85%;
+    --sidebar-border: 220 30% 20%;
+    --sidebar-ring: 199 89% 48%;
+    --sidebar-muted: 220 20% 25%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(217 71% 28%), hsl(199 89% 48%));
+    --gradient-hero: linear-gradient(160deg, hsl(220 40% 10%), hsl(217 71% 28%), hsl(199 89% 38%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(220 20% 97%));
+    --gradient-badge-gold: linear-gradient(135deg, hsl(38 92% 50%), hsl(28 80% 52%));
+    --gradient-badge-silver: linear-gradient(135deg, hsl(220 10% 60%), hsl(220 15% 75%));
+    --gradient-badge-bronze: linear-gradient(135deg, hsl(25 60% 45%), hsl(20 50% 55%));
+
+    --shadow-sm: 0 1px 3px 0 hsl(220 40% 13% / 0.04), 0 1px 2px -1px hsl(220 40% 13% / 0.04);
+    --shadow-md: 0 4px 14px -2px hsl(220 40% 13% / 0.08), 0 2px 4px -2px hsl(220 40% 13% / 0.04);
+    --shadow-lg: 0 10px 30px -6px hsl(220 40% 13% / 0.12), 0 4px 6px -4px hsl(220 40% 13% / 0.04);
+    --shadow-glow: 0 0 20px hsl(199 89% 48% / 0.15);
+
+    --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  .dark {
+    --background: 220 40% 7%;
+    --foreground: 220 15% 92%;
+
+    --card: 220 35% 12%;
+    --card-foreground: 220 15% 92%;
+
+    --popover: 220 35% 12%;
+    --popover-foreground: 220 15% 92%;
+
+    --primary: 199 89% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 30% 18%;
+    --secondary-foreground: 220 15% 92%;
+
+    --muted: 220 25% 16%;
+    --muted-foreground: 220 10% 55%;
+
+    --accent: 199 89% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 35%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 80% 45%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 25% 18%;
+    --input: 220 25% 18%;
+    --ring: 199 89% 48%;
+
+    --sidebar-background: 220 40% 5%;
+    --sidebar-foreground: 220 15% 80%;
+    --sidebar-primary: 199 89% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 35% 10%;
+    --sidebar-accent-foreground: 220 15% 80%;
+    --sidebar-border: 220 30% 12%;
+    --sidebar-ring: 199 89% 48%;
+    --sidebar-muted: 220 20% 15%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .gradient-primary {
+    background: var(--gradient-primary);
+  }
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+  .gradient-badge-gold {
+    background: var(--gradient-badge-gold);
+  }
+  .gradient-badge-silver {
+    background: var(--gradient-badge-silver);
+  }
+  .gradient-badge-bronze {
+    background: var(--gradient-badge-bronze);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-md);
+  }
+  .shadow-card-hover {
+    box-shadow: var(--shadow-lg);
+  }
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+
