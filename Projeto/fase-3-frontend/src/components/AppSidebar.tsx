@@ -1,3 +1,5 @@
+"use client";
+
 import {
   LayoutDashboard,
   Award,
@@ -8,9 +10,14 @@ import {
   Settings,
   LogOut,
   Hexagon,
+  Inbox,
+  Users,
+  BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { usePathname } from "next/navigation";
+import { useUser, UserRole } from "@/lib/user-context";
 const badgeIcon = "/softinsa-badge-icon.png";
 
 import {
@@ -26,18 +33,72 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const mainItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Catálogo de Badges", url: "/badges", icon: Award },
-  { title: "Minhas Candidaturas", url: "/submissions", icon: Send },
-  { title: "Meus Badges", url: "/my-badges", icon: Hexagon },
-];
-
-const extraItems = [
-  { title: "Conquistas", url: "/achievements", icon: Trophy },
-  { title: "Ranking", url: "/leaderboard", icon: Star },
-  { title: "Relatórios", url: "/reports", icon: FileText },
-];
+// Itens por role
+const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url: string; icon: any }[] }[]> = {
+  consultant: [
+    {
+      label: "Principal",
+      items: [
+        { title: "Dashboard", url: "/", icon: LayoutDashboard },
+        { title: "Catálogo de Badges", url: "/badges", icon: Award },
+        { title: "Minhas Candidaturas", url: "/candidaturas", icon: Send },
+        { title: "Meus Badges", url: "/my-badges", icon: Hexagon },
+      ],
+    },
+    {
+      label: "Gamificação",
+      items: [
+        { title: "Conquistas", url: "/achievements", icon: Trophy },
+        { title: "Ranking", url: "/leaderboard", icon: Star },
+      ],
+    },
+  ],
+  talent_manager: [
+    {
+      label: "Validação",
+      items: [
+        { title: "Caixa de Entrada", url: "/validacao", icon: Inbox },
+        { title: "Catálogo de Badges", url: "/badges", icon: Award },
+      ],
+    },
+    {
+      label: "Relatórios",
+      items: [
+        { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+        { title: "Consultores", url: "/utilizadores", icon: Users },
+      ],
+    },
+  ],
+  service_line_leader: [
+    {
+      label: "Validação",
+      items: [
+        { title: "Caixa de Entrada", url: "/validacao", icon: Inbox },
+        { title: "Catálogo de Badges", url: "/badges", icon: Award },
+        { title: "Dashboard da Service Line", url: "/dashboard-sl", icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: "Relatórios",
+      items: [
+        { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+        { title: "Consultores", url: "/utilizadores", icon: Users },
+      ],
+    },
+  ],
+  admin: [
+    {
+      label: "Administração",
+      items: [
+        { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
+        { title: "Gestão de Badges", url: "/admin/badges", icon: Award },
+        { title: "Gestão de Utilizadores", url: "/admin/utilizadores", icon: Users },
+        { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
+        { title: "Permissões", url: "/admin/permissoes", icon: ShieldCheck },
+      ],
+    },
+  ],
+};
 
 const bottomItems = [
   { title: "Definições", url: "/settings", icon: Settings },
@@ -47,8 +108,10 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = usePathname();
+  const { user, logout } = useUser();
 
-  const isActive = (path: string) => pathname === path;
+  const navGroups = NAV_CONFIG[user?.role ?? "consultant"] ?? NAV_CONFIG.consultant;
+  const isActive = (path: string) => pathname === path || (path !== "/" && pathname.startsWith(path));
 
   return (
     <Sidebar
@@ -66,63 +129,35 @@ export function AppSidebar() {
       </div>
 
       <SidebarContent className="px-2 py-3">
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 px-3 mb-1">
-            Principal
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                        isActive(item.url)
-                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                      }`}
-                      activeClassName=""
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 px-3 mb-1 mt-2">
-            Gamificação
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {extraItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end
-                      className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
-                        isActive(item.url)
-                          ? "bg-sidebar-accent text-sidebar-primary font-medium"
-                          : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                      }`}
-                      activeClassName=""
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-sidebar-foreground/40 px-3 mb-1">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to={item.url}
+                        className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                          isActive(item.url)
+                            ? "bg-sidebar-accent text-sidebar-primary font-medium"
+                            : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        }`}
+                        activeClassName=""
+                      >
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-2">
@@ -132,7 +167,6 @@ export function AppSidebar() {
               <SidebarMenuButton asChild>
                 <NavLink
                   to={item.url}
-                  end
                   className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 transition-colors"
                   activeClassName="bg-sidebar-accent text-sidebar-primary font-medium"
                 >
@@ -144,13 +178,13 @@ export function AppSidebar() {
           ))}
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <a
-                href="/"
-                className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive/70 hover:bg-destructive/10 transition-colors"
+              <button
+                onClick={() => { logout(); window.location.href = "/login"; }}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive/70 hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
                 {!collapsed && <span>Sair</span>}
-              </a>
+              </button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

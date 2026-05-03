@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { UserProvider } from "@/lib/user-context";
 
 export const metadata: Metadata = {
-  title: "Pathway Quest Pro",
-  description: "Frontend Next.js integrado com Design Original",
+  title: "Softinsa Badge Platform",
+  description: "Plataforma de Badges Digitais da Softinsa — PINT 2025",
 };
 
 export default function RootLayout({
@@ -14,8 +15,9 @@ export default function RootLayout({
   return (
     <html lang="pt" className="h-full">
       <body className="min-h-full h-full antialiased font-sans">
-        {/* We let individual pages use AppLayout or we could put SidebarProvider here */}
-        {children}
+        <UserProvider>
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

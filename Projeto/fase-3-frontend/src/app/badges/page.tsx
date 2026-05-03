@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Award, Lock, Search, Loader2 } from 'lucide-react';
-import { getTodosBadges } from '@/lib/api';
+import { api } from '@/lib/api';
 
 interface Badge {
   id: string;
@@ -22,9 +22,8 @@ export default function BadgesCatalog() {
   useEffect(() => {
     async function fetchBadges() {
       try {
-        const data = await getTodosBadges();
-        // Adjust depending on the returned structure (could be data.data)
-        setBadges(data || []);
+        const res = await api.get('/badges');
+        setBadges(res.data || []);
       } catch (error) {
         console.error('Erro ao carregar badges:', error);
       } finally {
