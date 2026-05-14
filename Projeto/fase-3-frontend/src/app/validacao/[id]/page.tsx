@@ -14,7 +14,10 @@ import {
   Clock,
   AlertCircle,
   MessageSquare,
+  RotateCcw,
+  Download,
 } from "lucide-react";
+import { downloadCertificate } from "@/lib/certificate";
 import Link from "next/link";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +32,17 @@ interface Evidence {
   file_url: string;
   description: string;
   uploaded_at: string;
+}
+
+interface HistoryEntry {
+  id: number;
+  from_status: string | null;
+  to_status: string;
+  event_type: string;
+  comment: string | null;
+  occurred_at: string;
+  actor_name: string;
+  actor_role: string;
 }
 
 interface ApplicationDetail {
@@ -53,18 +67,24 @@ export default function ValidacaoDetailPage() {
   const { user } = useUser();
 
   const [application, setApplication] = useState<ApplicationDetail | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
-  const [actionDone, setActionDone] = useState<"approved" | "rejected" | null>(null);
+  const [showSendBackForm, setShowSendBackForm] = useState(false);
+  const [actionDone, setActionDone] = useState<"approved" | "rejected" | "sent_back" | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await api.get(`/applications/${params.id}`);
-        setApplication(res.data);
+        const [appRes, histRes] = await Promise.all([
+          api.get(`/applications/${params.id}`),
+          api.get(`/applications/${params.id}/history`),
+        ]);
+        setApplication(appRes.data);
+        setHistory(histRes.data ?? []);
       } catch {
         setError("Não foi possível carregar os detalhes desta candidatura.");
       } finally {
@@ -98,10 +118,7 @@ export default function ValidacaoDetailPage() {
     }
     setActionLoading(true);
     try {
-      await api.post(
-        `/applications/${params.id}/reject`,
-        { comment }
-      );
+      await api.post(`/applications/${params.id}/reject`, { comment });
       setActionDone("rejected");
     } catch {
       alert("Erro ao rejeitar a candidatura. Tenta novamente.");
@@ -110,34 +127,52 @@ export default function ValidacaoDetailPage() {
     }
   };
 
+  const handleSendBack = async () => {
+    if (!comment.trim()) {
+      alert("É obrigatório indicar o motivo da devolução.");
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await api.post(`/applications/${params.id}/send-back`, { comment });
+      setActionDone("sent_back");
+    } catch {
+      alert("Erro ao devolver a candidatura. Tenta novamente.");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Feedback após ação
   if (actionDone) {
+    const configs = {
+      approved: {
+        bg: "bg-green-100", icon: <CheckCircle2 className="h-10 w-10 text-green-600" />,
+        title: user.role === "talent_manager" ? "Candidatura Validada!" : "Badge Atribuído!",
+        msg: user.role === "talent_manager"
+          ? "A candidatura foi encaminhada para o Service Line Leader para validação final."
+          : "O badge foi atribuído ao consultor com sucesso.",
+      },
+      rejected: {
+        bg: "bg-red-100", icon: <XCircle className="h-10 w-10 text-red-600" />,
+        title: "Candidatura Rejeitada",
+        msg: "O consultor foi notificado com o motivo da rejeição.",
+      },
+      sent_back: {
+        bg: "bg-amber-100", icon: <ArrowLeft className="h-10 w-10 text-amber-600" />,
+        title: "Candidatura Devolvida",
+        msg: "A candidatura foi devolvida ao consultor com o teu comentário. O consultor pode corrigir e resubmeter.",
+      },
+    };
+    const cfg = configs[actionDone];
     return (
       <AppLayout>
         <div className="max-w-2xl mx-auto p-8 flex flex-col items-center justify-center min-h-[60vh]">
-          {actionDone === "approved" ? (
-            <>
-              <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                <CheckCircle2 className="h-10 w-10 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Candidatura Aprovada!</h2>
-              <p className="text-muted-foreground text-center mb-8">
-                {user.role === "talent_manager"
-                  ? "A candidatura foi enviada para o Service Line Leader para validação final."
-                  : "O badge foi atribuído ao consultor com sucesso."}
-              </p>
-            </>
-          ) : (
-            <>
-              <div className="h-20 w-20 rounded-full bg-red-100 flex items-center justify-center mb-6">
-                <XCircle className="h-10 w-10 text-red-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Candidatura Rejeitada</h2>
-              <p className="text-muted-foreground text-center mb-8">
-                O consultor foi notificado e a candidatura foi devolvida com o comentário fornecido.
-              </p>
-            </>
-          )}
+          <div className={`h-20 w-20 rounded-full ${cfg.bg} flex items-center justify-center mb-6`}>
+            {cfg.icon}
+          </div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{cfg.title}</h2>
+          <p className="text-muted-foreground text-center mb-8">{cfg.msg}</p>
           <Link href="/validacao">
             <Button className="gap-2">
               <ArrowLeft className="h-4 w-4" />
@@ -196,7 +231,21 @@ export default function ValidacaoDetailPage() {
             <CardContent className="p-6">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="space-y-3">
-                  <h1 className="text-xl font-bold text-foreground">Revisão de Candidatura #{application.id}</h1>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-xl font-bold text-foreground">Revisão de Candidatura #{application.id}</h1>
+                    {application.status === "closed" && application.final_result === "approved" && (
+                      <Button size="sm" variant="outline" className="gap-1.5 text-xs"
+                        onClick={() => downloadCertificate({
+                          consultantName: application.applicant_name,
+                          badgeName: application.badge_name,
+                          levelCode: null, levelName: null, areaName: null, serviceLineName: null,
+                          awardedAt: application.closed_at ?? new Date().toISOString(),
+                        })}>
+                        <Download className="h-3.5 w-3.5" />
+                        Baixar Certificado
+                      </Button>
+                    )}
+                  </div>
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1.5">
                       <User className="h-4 w-4" />
@@ -285,6 +334,60 @@ export default function ValidacaoDetailPage() {
           </Card>
         </motion.div>
 
+        {/* Histórico da candidatura */}
+        {history.length > 0 && (
+          <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
+            <Card className="border border-border shadow-card">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-accent" />
+                  Histórico da Candidatura
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="relative pl-5 space-y-4">
+                  {/* linha vertical */}
+                  <div className="absolute left-2 top-1 bottom-1 w-px bg-border" />
+                  {history.map((h) => {
+                    const eventColors: Record<string, string> = {
+                      submitted: "bg-blue-500",
+                      approved: "bg-green-500",
+                      rejected: "bg-red-500",
+                      send_back: "bg-amber-500",
+                    };
+                    const dot = eventColors[h.event_type] ?? "bg-gray-400";
+                    const eventLabels: Record<string, string> = {
+                      submitted: "Submetida",
+                      approved: "Aprovada",
+                      rejected: "Rejeitada",
+                      send_back: "Devolvida",
+                    };
+                    return (
+                      <div key={h.id} className="relative flex gap-3">
+                        <div className={`absolute -left-3 mt-1 h-3 w-3 rounded-full border-2 border-background ${dot}`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-medium text-foreground">
+                              {eventLabels[h.event_type] ?? h.event_type}
+                            </span>
+                            <span className="text-xs text-muted-foreground">por {h.actor_name}</span>
+                            <span className="text-xs text-muted-foreground ml-auto">
+                              {new Date(h.occurred_at).toLocaleString("pt-PT")}
+                            </span>
+                          </div>
+                          {h.comment && (
+                            <p className="text-xs text-muted-foreground mt-0.5 italic">"{h.comment}"</p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Área de decisão */}
         {alreadyClosed ? (
           <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
@@ -325,42 +428,85 @@ export default function ValidacaoDetailPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <Button
                     onClick={handleApprove}
-                    disabled={actionLoading}
+                    disabled={actionLoading || showRejectForm || showSendBackForm}
                     className="gap-2 bg-green-600 hover:bg-green-700 text-white"
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    {user.role === "talent_manager" ? "Aprovar e Enviar para SLL" : "Aprovar e Atribuir Badge"}
+                    {user.role === "talent_manager"
+                      ? "Validar e Enviar para SLL"
+                      : "Aprovar e Atribuir Badge"}
                   </Button>
+
                   <Button
-                    onClick={() => {
-                      if (!showRejectForm) {
-                        setShowRejectForm(true);
-                      } else {
-                        handleReject();
-                      }
-                    }}
-                    disabled={actionLoading}
-                    variant="destructive"
-                    className="gap-2"
+                    onClick={() => { setShowSendBackForm(true); setShowRejectForm(false); }}
+                    disabled={actionLoading || showRejectForm}
+                    variant="outline"
+                    className="gap-2 border-amber-400 text-amber-700 hover:bg-amber-50"
                   >
-                    <XCircle className="h-4 w-4" />
-                    {showRejectForm ? "Confirmar Rejeição" : "Rejeitar"}
+                    <RotateCcw className="h-4 w-4" />
+                    {user.role === "talent_manager" ? "Devolver (Incorreto)" : "Devolver ao Consultor"}
                   </Button>
-                  {showRejectForm && (
+
+                  {/* Rejeitar só aparece para o SLL — TM não pode rejeitar */}
+                  {user.role === "service_line_leader" && (
                     <Button
-                      variant="ghost"
-                      onClick={() => setShowRejectForm(false)}
-                      disabled={actionLoading}
+                      onClick={() => { setShowRejectForm(true); setShowSendBackForm(false); }}
+                      disabled={actionLoading || showSendBackForm}
+                      variant="destructive"
+                      className="gap-2"
                     >
-                      Cancelar
+                      <XCircle className="h-4 w-4" />
+                      Rejeitar
                     </Button>
                   )}
                 </div>
 
+                {/* Form Send Back */}
+                {showSendBackForm && (
+                  <div className="space-y-3 p-3 rounded-lg border border-amber-200 bg-amber-50/50">
+                    <p className="text-xs font-medium text-amber-700">
+                      ⚠️ Indica o motivo da devolução (obrigatório). O consultor poderá corrigir e resubmeter.
+                    </p>
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Descreve o que precisa de ser corrigido..."
+                      className="w-full min-h-[80px] p-3 text-sm rounded-lg border border-border bg-background text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-amber-400/30"
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleSendBack} disabled={actionLoading} className="gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+                        <RotateCcw className="h-4 w-4" />
+                        Confirmar Devolução
+                      </Button>
+                      <Button variant="ghost" onClick={() => { setShowSendBackForm(false); setComment(""); }} disabled={actionLoading}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Form Rejeição */}
                 {showRejectForm && (
-                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-md p-2.5">
-                    ⚠️ Confirma a rejeição desta candidatura? O consultor será notificado e a candidatura devolvida.
-                  </p>
+                  <div className="space-y-3 p-3 rounded-lg border border-red-200 bg-red-50/50">
+                    <p className="text-xs font-medium text-red-700">
+                      ⚠️ Confirma a rejeição? O consultor será notificado. Esta ação fecha a candidatura definitivamente.
+                    </p>
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Motivo da rejeição (obrigatório)..."
+                      className="w-full min-h-[80px] p-3 text-sm rounded-lg border border-border bg-background text-foreground resize-y focus:outline-none focus:ring-2 focus:ring-destructive/30"
+                    />
+                    <div className="flex gap-2">
+                      <Button onClick={handleReject} disabled={actionLoading} variant="destructive" className="gap-2">
+                        <XCircle className="h-4 w-4" />
+                        Confirmar Rejeição
+                      </Button>
+                      <Button variant="ghost" onClick={() => { setShowRejectForm(false); setComment(""); }} disabled={actionLoading}>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </CardContent>
             </Card>

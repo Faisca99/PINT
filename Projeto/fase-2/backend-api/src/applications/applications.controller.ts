@@ -28,9 +28,23 @@ export class ApplicationsController {
     return this.applicationsService.list();
   }
 
+  @Get('mine')
+  async mine(@Headers('x-user-id') userIdHeader: string) {
+    const userId = Number(userIdHeader);
+    if (!Number.isFinite(userId) || userId <= 0) {
+      throw new UnauthorizedException('x-user-id header invalido');
+    }
+    return this.applicationsService.mine(userId);
+  }
+
   @Get(':id')
   async getById(@Param('id', ParseIntPipe) id: number) {
     return this.applicationsService.byId(id);
+  }
+
+  @Get(':id/history')
+  async history(@Param('id', ParseIntPipe) id: number) {
+    return this.applicationsService.history(id);
   }
 
   @Post()
@@ -99,5 +113,19 @@ export class ApplicationsController {
     }
 
     return this.applicationsService.reject(id, userId, body.comment);
+  }
+
+  @Post(':id/send-back')
+  async sendBack(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-user-id') userIdHeader: string,
+    @Body() body: Required<Pick<ReviewBody, 'comment'>>,
+  ) {
+    const userId = Number(userIdHeader);
+    if (!Number.isFinite(userId) || userId <= 0) {
+      throw new UnauthorizedException('x-user-id header invalido');
+    }
+
+    return this.applicationsService.sendBack(id, userId, body.comment);
   }
 }

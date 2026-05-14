@@ -24,6 +24,9 @@ interface ApplicationRow {
   id: number;
   applicant_name: string;
   badge_name: string;
+  level_code: string | null;
+  area_name: string | null;
+  service_line_name: string | null;
   status: string;
   final_result: string | null;
   submitted_at: string | null;
@@ -84,21 +87,30 @@ export default function ValidacaoInboxPage() {
   // Filtrar conforme o role e o filtro selecionado
   const filtered = applications.filter((app) => {
     if (user.role === "talent_manager") {
-      // TM vê todas as submetidas
+      // TM vê todas as submetidas, independente de área/SL
       const relevantStatuses = ["submitted", "in_validation", "closed"];
       if (!relevantStatuses.includes(app.status)) return false;
     } else if (user.role === "service_line_leader") {
-      // SLL vê as em validação (já passaram pelo TM)
+      // SLL só vê as da SUA service line, já em validação
       const relevantStatuses = ["in_validation", "closed"];
       if (!relevantStatuses.includes(app.status)) return false;
+      // Filtro por service line (se o utilizador tem SL atribuída)
+      if (user.serviceLine && app.service_line_name && app.service_line_name !== user.serviceLine) {
+        return false;
+      }
     }
     if (filterStatus !== "all") return app.status === filterStatus;
     return true;
   });
 
-  const pendingCount = applications.filter((a) =>
-    user.role === "talent_manager" ? a.status === "submitted" : a.status === "in_validation"
-  ).length;
+  const pendingCount = applications.filter((a) => {
+    if (user.role === "talent_manager") return a.status === "submitted";
+    if (user.role === "service_line_leader") {
+      const matchSL = !user.serviceLine || !a.service_line_name || a.service_line_name === user.serviceLine;
+      return a.status === "in_validation" && matchSL;
+    }
+    return false;
+  }).length;
 
   const statusFilters =
     user.role === "talent_manager"
@@ -251,7 +263,10 @@ export default function ValidacaoInboxPage() {
                           </div>
                           <div className="min-w-0">
                             <div className="text-sm font-medium text-foreground truncate">{app.applicant_name}</div>
-                            <div className="text-xs text-muted-foreground truncate">{app.badge_name}</div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {app.badge_name}
+                              {app.area_name && <span className="ml-1 opacity-60">· {app.area_name}</span>}
+                            </div>
                           </div>
                         </div>
 

@@ -1,0 +1,69 @@
+🔴 CRÍTICO — Workflow (falta no backend E frontend)
+não concluído
+TM: "Send Back" / Incorreto — devolver candidatura ao consultor (→ estado open) — o PDF exige explicitamente e o backend não tem endpoint nem o frontend tem botão
+não concluído
+SLL: "Send Back" — devolver com comentário (→ estado open) — mesmo problema
+não concluído
+Histórico da candidatura visível — application_history existe na BD mas não há UI para ver quem aprovou/rejeitou/devolveu e quando (o PDF diz que deve ser auditável)
+🔴 CRÍTICO — Consultor (funcionalidades core em falta)
+não concluído
+C-1 Email de confirmação de registo + alterar password no 1º login
+não concluído
+C-10 Aceitação de termos RGPD antes de publicar/partilhar badge
+não concluído
+C-19 Email de confirmação ao submeter candidatura
+não concluído
+C-20 Notificações in-app de aprovação/rejeição (sino no header — a BD tem a tabela notifications mas a UI não as mostra)
+não concluído
+C-24 Galeria pública de badges do consultor
+não concluído
+C-25/26 Página pública verificável por URL — /verify/[token] — o public_token existe na BD mas a página não existe
+não concluído
+C-21 Alertas de expiração de badges (a BD tem expires_at, falta mostrar no frontend)
+🔴 CRÍTICO — Reporting mínimo exigível (PDF página 13)
+O PDF define reporting mínimo obrigatório — a página /relatorios atual não cobre:
+
+não concluído
+% dos Badges com visão mensal
+não concluído
+# Badges por Learning Path
+não concluído
+# Badges por nível (A/B/C/D/E)
+não concluído
+# Utilizadores registados
+🔴 CRÍTICO — Administrador (página /admin não existe)
+não concluído
+A-1/2 Gestão de utilizadores: criar, editar, definir perfil/role
+não concluído
+A-3 Criar e eliminar badges (via UI)
+não concluído
+A-4 Criar e gerir Learning Paths / Service Lines / Áreas / Níveis / Requisitos
+não concluído
+A-6 Configurar pontos por badge e expiração (via UI)
+não concluído
+A-8 Configurar políticas RGPD
+não concluído
+A-9 Consultar e gerir todos os pedidos
+🟡 IMPORTANTE — Autenticação (Requisitos Gerais)
+não concluído
+Recuperar password — formulário com email → nova password → confirmação (PDF pág. 12/13 descreve o fluxo completo)
+não concluído
+"Guardar dados de login" — opção remember me
+🟡 IMPORTANTE — Service Line Leader
+não concluído
+SLL-9 Badges Premium/conquistas especiais visíveis
+não concluído
+SLL-14 Exportação de aprovações para Excel/PDF
+não concluído
+SLL-18 Ranking/comparação de consultores da sua SL
+não concluído
+SLL-19 Histórico do processo de candidatura (ver quem fez o quê)
+🟡 IMPORTANTE — Talent Manager
+não concluído
+TM-2 Dashboard pessoal do TM (tem sidebar para validação mas não tem dashboard próprio com stats)
+não concluído
+TM-12/13 Exportação de aprovações e rejeições para Excel
+não concluído
+TM-20 Badges próximos da data de expiração
+não concluído
+TM-21 Histórico da candidatura

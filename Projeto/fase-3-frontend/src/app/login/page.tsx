@@ -3,14 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Award, Lock, Mail, Loader2, AlertCircle } from "lucide-react";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { useUser, UserRole } from "@/lib/user-context";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useUser();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(() => typeof window !== "undefined" ? localStorage.getItem("pint_saved_email") ?? "" : "");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(() => typeof window !== "undefined" ? !!localStorage.getItem("pint_saved_email") : false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,6 +25,12 @@ export default function LoginPage() {
       const res = await api.post("/auth/login", { email, password });
       const { accessToken, user } = res.data;
 
+      if (rememberMe) {
+        localStorage.setItem("pint_saved_email", email);
+      } else {
+        localStorage.removeItem("pint_saved_email");
+      }
+
       login({
         id: Number(user.id),
         name: user.full_name,
@@ -31,9 +39,14 @@ export default function LoginPage() {
         area: user.area ?? null,
         serviceLine: user.service_line ?? null,
         accessToken,
+        mustChangePassword: user.must_change_password ?? false,
       });
 
-      router.push("/");
+      if (user.must_change_password) {
+        router.push("/change-password");
+      } else {
+        router.push("/");
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message;
       setError(
@@ -107,6 +120,21 @@ export default function LoginPage() {
             </div>
           )}
 
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-border"
+              />
+              <span className="text-xs text-muted-foreground">Lembrar email</span>
+            </label>
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Esqueceste a password?
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -117,7 +145,12 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-border text-center">
+        <div className="mt-6 text-center text-sm text-muted-foreground">
+          Ainda não tens conta?{" "}
+          <Link href="/register" className="text-primary hover:underline font-medium">Registar</Link>
+        </div>
+
+        <div className="mt-4 pt-4 border-t border-border text-center">
           <p className="text-xs text-muted-foreground">
             Acesso restrito a colaboradores Softinsa.
           </p>

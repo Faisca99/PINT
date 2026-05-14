@@ -12,6 +12,7 @@ export interface CurrentUser {
   area: string | null;
   serviceLine: string | null;
   accessToken: string;
+  mustChangePassword?: boolean;
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {

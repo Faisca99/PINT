@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Award, RefreshCw } from "lucide-react";
+import { Trophy, Award, RefreshCw, Users, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import AppLayout from "@/components/AppLayout";
@@ -13,6 +13,8 @@ interface RankEntry {
   userId: number;
   name: string;
   badgeCount: number;
+  totalPoints: number;
+  serviceLine?: string | null;
 }
 
 const getRankIcon = (rank: number) => {
@@ -30,26 +32,28 @@ export default function LeaderboardPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await api.get("/applications");
-        const approved = res.data.filter(
+        // Usar endpoint de leaderboard real (pontos + badges)
+        const [leaderRes, appsRes] = await Promise.all([
+          api.get("/me/leaderboard"),
+          api.get("/applications"),
+        ]);
+
+        // Contar badges aprovados por utilizador com service line
+        const approvedApps = (appsRes.data ?? []).filter(
           (a: any) => a.status === "closed" && a.final_result === "approved"
         );
-
-        const counts: Record<number, { name: string; count: number }> = {};
-        for (const a of approved) {
-          if (!counts[a.applicant_user_id]) {
-            counts[a.applicant_user_id] = { name: a.applicant_name, count: 0 };
-          }
-          counts[a.applicant_user_id].count++;
+        const slByUser: Record<number, string | null> = {};
+        for (const a of approvedApps) {
+          slByUser[a.applicant_user_id] = a.service_line_name ?? null;
         }
 
-        const sorted = Object.entries(counts)
-          .map(([userId, data]) => ({
-            userId: Number(userId),
-            name: data.name,
-            badgeCount: data.count,
-          }))
-          .sort((a, b) => b.badgeCount - a.badgeCount);
+        const sorted: RankEntry[] = (leaderRes.data ?? []).map((entry: any) => ({
+          userId: Number(entry.id),
+          name: entry.full_name ?? entry.name ?? "",
+          badgeCount: Number(entry.badge_count),
+          totalPoints: Number(entry.total_points),
+          serviceLine: slByUser[Number(entry.id)] ?? null,
+        })).sort((a: RankEntry, b: RankEntry) => b.totalPoints - a.totalPoints);
 
         setRanking(sorted);
       } catch {
@@ -63,8 +67,14 @@ export default function LeaderboardPage() {
 
   if (!user) return null;
 
-  const top3 = ranking.slice(0, 3);
-  const rest = ranking.slice(3);
+  // SLL vê apenas os da sua service line
+  const isSLL = user.role === "service_line_leader";
+  const displayRanking = isSLL && user.serviceLine
+    ? ranking.filter((e) => !e.serviceLine || e.serviceLine === user.serviceLine)
+    : ranking;
+
+  const top3 = displayRanking.slice(0, 3);
+  const rest = displayRanking.slice(3);
 
   return (
     <AppLayout>
@@ -74,8 +84,10 @@ export default function LeaderboardPage() {
             <Trophy className="h-6 w-6 text-warning" />
             Ranking
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Os consultores com mais badges aprovados na plataforma
+          <p className="text-muted-foreground mt-1 text-sm">
+            {isSLL && user.serviceLine
+              ? `Consultores com mais badges — ${user.serviceLine}`
+              : "Os consultores com mais badges aprovados na plataforma"}
           </p>
         </motion.div>
 
@@ -84,10 +96,12 @@ export default function LeaderboardPage() {
             <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
             A carregar...
           </div>
-        ) : ranking.length === 0 ? (
+        ) : displayRanking.length === 0 ? (
           <div className="p-12 text-center text-muted-foreground">
-            <Award className="h-8 w-8 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">Ainda não há badges aprovados na plataforma.</p>
+            <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
+            <p className="text-sm">
+              {isSLL ? "Nenhum consultor com badges na tua service line." : "Ainda não há badges aprovados."}
+            </p>
           </div>
         ) : (
           <>
@@ -112,11 +126,11 @@ export default function LeaderboardPage() {
                           </AvatarFallback>
                         </Avatar>
                         <div className="text-sm font-semibold text-foreground">{entry.name}</div>
-                        <div className="flex items-center justify-center gap-1 text-accent mt-3">
-                          <Award className="h-4 w-4" />
-                          <span className="text-lg font-bold">{entry.badgeCount}</span>
+                        <div className="flex items-center justify-center gap-1 text-yellow-600 mt-3">
+                          <Zap className="h-4 w-4" />
+                          <span className="text-lg font-bold">{entry.totalPoints}</span>
                         </div>
-                        <div className="text-xs text-muted-foreground">badges obtidos</div>
+                        <div className="text-xs text-muted-foreground">{entry.badgeCount} badge{entry.badgeCount !== 1 ? "s" : ""} · {entry.totalPoints} pts</div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -148,17 +162,18 @@ export default function LeaderboardPage() {
                           <div className="text-sm font-medium text-foreground">
                             {entry.name}
                             {entry.userId === user.id && (
-                              <span className="ml-2 text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">
-                                Tu
-                              </span>
+                              <span className="ml-2 text-[10px] bg-accent/10 text-accent px-1.5 py-0.5 rounded-full font-medium">Tu</span>
                             )}
                           </div>
                         </div>
                       </div>
-                      <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                        <Award className="h-4 w-4 text-accent" />
-                        {entry.badgeCount}
-                      </span>
+                      <div className="text-right">
+                        <div className="flex items-center gap-1 text-yellow-600 font-bold text-sm">
+                          <Zap className="h-3.5 w-3.5" />
+                          {entry.totalPoints} pts
+                        </div>
+                        <div className="text-xs text-muted-foreground">{entry.badgeCount} badges</div>
+                      </div>
                     </motion.div>
                   ))}
                 </CardContent>

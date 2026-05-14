@@ -4,40 +4,90 @@ Este documento serve para passar o contexto do projeto a outro membro do grupo (
 
 ## 📋 Checklist de Progresso
 
-### Concluído (✅)
-- [x] **Setup Inicial**: Criação do projeto frontend em Next.js (`fase-3-frontend`) e resolução de conflitos de portas (3000 vs 3001).
-- [x] **UI & Design**: Integração do template base, configuração do Tailwind CSS (compatibilidade v4 vs v3) e instalação de dependências (`lucide-react`, framer-motion, etc).
-- [x] **Backend Extensions**: Modificação do `applications.service.ts` e `controller` para incluir endpoints adicionais necessários ao frontend (ex: `GET /applications/:id` com agregação JSON `json_agg` das evidências).
-- [x] **Fluxo do Consultor (Frontend)**:
-  - Página de Detalhe da Badge (`/badges/[id]`).
-  - Criação da Candidatura (`POST /applications`).
-  - Formulário Dinâmico de Candidatura (`/candidaturas/[id]`).
-  - Submissão de Evidências (`POST /applications/:id/evidences`).
-  - Submissão Final da Candidatura (`POST /applications/:id/submit`).
+### Fase 1 — Arquitetura & Base de Dados ✅
+- [x] ERD com 27 tabelas, schema SQL
+- [x] Especificação de 100+ endpoints REST
+- [x] Decisões arquiteturais (NestJS + Next.js + PostgreSQL Neon)
 
-### Pendente / Próximos Passos (⏳)
-- [ ] **Vista de Validação (Talent Manager & Service Line Leader)**: Criar a Caixa de Entrada (Inbox) que lista todas as candidaturas nos estados `submitted` ou `in_validation`.
-- [ ] **Revisão de Evidências**: Criar a vista de detalhe para os aprovadores poderem ver as evidências submetidas por um consultor.
-- [ ] **Botões de Decisão**: Integrar as ações de `Aprovar` / `Rejeitar` no frontend e conectá-las aos respetivos endpoints do backend (`POST /applications/:id/approve` ou equivalente).
-- [ ] **Gestão de Autenticação / Utilizadores**: Atualmente os testes estão a ser feitos injetando um utilizador *hardcoded* (ex: userId 1). Implementar/Simular o login corretamente.
+### Fase 2 — Backend (NestJS) ✅
+- [x] Auth: `POST /auth/login`, `GET /auth/me`
+- [x] Badges: listagem e detalhe com requisitos
+- [x] Candidaturas: criar, adicionar evidências, submeter
+- [x] Aprovação: `POST /applications/:id/approve`, `POST /applications/:id/reject`
+- [x] Dashboard do consultor
+- [x] Camada de negócio em SQL (views, functions, triggers)
+- [x] Seed de dados de teste
+
+### Fase 3 — Frontend (Next.js) ✅ COMPLETA
+- [x] **Setup**: Next.js 15, Tailwind CSS v4, shadcn/ui, framer-motion
+- [x] **Login**: Formulário real conectado ao backend (`/auth/login`), gestão de sessão por localStorage, redirect automático para `/login` se não autenticado
+- [x] **Contexto de utilizador**: role, nome, email guardados; sidebar adapta-se ao role
+- [x] **Fluxo do Consultor**:
+  - `/badges` — catálogo de badges
+  - `/badges/[id]` — detalhe com botão de candidatura
+  - `/candidaturas` — lista real das candidaturas do utilizador (via `GET /applications/mine`)
+  - `/candidaturas/[id]` — formulário de evidências + submissão final
+- [x] **Fluxo de Validação (Talent Manager & Service Line Leader)**:
+  - `/validacao` — Inbox com filtros por role e status, stats de pendentes/aprovadas/rejeitadas
+  - `/validacao/[id]` — detalhe com todas as evidências + botões Aprovar / Rejeitar
+- [x] **RBAC básico**: sidebar e botões de decisão adaptam-se ao role do utilizador autenticado
 
 ---
 
-## 🤖 Prompt para o AI (Para copiar e colar na próxima sessão)
+## 🚀 Estado atual do sistema
 
-Copia o texto abaixo e envia ao assistente para retomar imediatamente o trabalho:
+### Fluxo completo funcional:
+1. Consultor faz login → é direcionado ao dashboard
+2. Consultor vai ao catálogo → candidata-se a um badge → preenche evidências → submete
+3. Talent Manager entra → vê candidatura na Caixa de Entrada → aprova (avança para SLL) ou rejeita
+4. Service Line Leader → vê candidatura em validação → aprova (badge atribuído) ou rejeita
+
+### Endpoints backend relevantes:
+- `GET /api/v1/applications/mine` — candidaturas do utilizador autenticado (novo)
+- `GET /api/v1/applications` — todas as candidaturas (para TM/SLL)
+- `GET /api/v1/applications/:id` — detalhe com evidências (json_agg)
+- `POST /api/v1/applications/:id/approve` — aprovar
+- `POST /api/v1/applications/:id/reject` — rejeitar (comment obrigatório)
+
+---
+
+## 🔜 Fase 4 — O que continuar
+
+O colega que continuar pode focar-se em:
+
+### Prioridade alta:
+- [ ] **Dashboard do consultor** (`/`) — atualmente estático, ligar ao `GET /me/dashboard`
+- [ ] **Meus Badges** (`/my-badges`) — listar badges ganhos via `GET /me/badges`
+- [ ] **Página pública de badge** — URL única verificável por token (requisito do projeto)
+- [ ] **Relatórios** (`/relatorios`) — exportar candidaturas para Excel/PDF
+
+### Prioridade média:
+- [ ] **Dashboard Service Line Leader** (`/dashboard-sl`) — progresso dos consultores da área
+- [ ] **Utilizadores** (`/utilizadores`) — listagem de consultores para TM/SLL
+- [ ] **Conquistas** (`/achievements`) — milestones e badges especiais (Premium Badges)
+- [ ] **Leaderboard** (`/leaderboard`) — ranking por pontos
+
+### Notas técnicas:
+- Auth usa `x-user-id` header (injetado automaticamente pelo interceptor em `lib/api.ts`)
+- Backend corre em `localhost:3001`, frontend em `localhost:3000`
+- Para correr: backend → `cd fase-2/backend-api && npm run start:dev`; frontend → `cd fase-3-frontend && npm run dev`
+- Conta de teste: `joao.silva@softinsa.pt` / `Softinsa2025!`
+
+---
+
+## 🤖 Prompt para o AI (Fase 4)
 
 ```text
-Olá! Estou a trabalhar num projeto full-stack (NestJS no backend na pasta `fase-2/backend-api` e Next.js no frontend na pasta `fase-3-frontend`).
+Olá! Estou a trabalhar num projeto full-stack de badges (Softinsa Badges Platform).
 
-O fluxo do "Consultor" (pesquisa de badges e submissão de candidaturas com evidências) já está finalizado. Os componentes visuais base e o Tailwind já estão configurados. 
+Stack: NestJS (backend em `fase-2/backend-api`, porta 3001) + Next.js 15 (frontend em `fase-3-frontend`, porta 3000) + PostgreSQL Neon.
 
-O objetivo agora é focar-nos no Fluxo de Validação (Talent Manager e Service Line Leader), seguindo rigorosamente os requisitos do projeto. 
+A Fase 3 está completa: login real, fluxo completo do consultor (candidatura + evidências + submissão) e fluxo de validação (TM e SLL com aprovação/rejeição). O auth usa x-user-id header injetado automaticamente pelo interceptor em `lib/api.ts`.
 
-Por favor:
-1. Analisa os endpoints existentes no backend (`applications.controller.ts` e `applications.service.ts`) para ver como recuperar as candidaturas submetidas e como realizar a aprovação/rejeição.
-2. Cria a página de "Caixa de Entrada" no Next.js onde os líderes podem listar as candidaturas pendentes de aprovação.
-3. Cria a vista de detalhe para os líderes reverem as evidências e aprovarem/rejeitarem.
+O objetivo agora é a Fase 4. Começa por:
+1. Ligar o dashboard do consultor (`/`) ao endpoint real `GET /api/v1/me/dashboard`
+2. Implementar a página "Meus Badges" (`/my-badges`) com os badges ganhos via `GET /api/v1/me/badges`
+3. Implementar a página de relatórios para TM/SLL
 
-Avança passo-a-passo. Podes começar por criar a página de lista de candidaturas pendentes no frontend caso o backend já tenha o endpoint de listagem, ou se precisares, cria o endpoint no backend primeiro. Mostra-me o plano.
+Analisa primeiro os endpoints disponíveis no backend e o estado atual das páginas antes de implementar. Avança passo-a-passo.
 ```

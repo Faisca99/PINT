@@ -14,6 +14,9 @@ import {
   Users,
   BarChart3,
   ShieldCheck,
+  Bell,
+  Mail,
+  Megaphone,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { usePathname } from "next/navigation";
@@ -43,6 +46,8 @@ const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url:
         { title: "Catálogo de Badges", url: "/badges", icon: Award },
         { title: "Minhas Candidaturas", url: "/candidaturas", icon: Send },
         { title: "Meus Badges", url: "/my-badges", icon: Hexagon },
+        { title: "Timeline", url: "/timeline", icon: FileText },
+        { title: "Lembretes", url: "/lembretes", icon: Bell },
       ],
     },
     {
@@ -50,13 +55,15 @@ const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url:
       items: [
         { title: "Conquistas", url: "/achievements", icon: Trophy },
         { title: "Ranking", url: "/leaderboard", icon: Star },
+        { title: "Assinatura Email", url: "/assinatura", icon: Mail },
       ],
     },
   ],
   talent_manager: [
     {
-      label: "Validação",
+      label: "Principal",
       items: [
+        { title: "Dashboard", url: "/dashboard-tm", icon: LayoutDashboard },
         { title: "Caixa de Entrada", url: "/validacao", icon: Inbox },
         { title: "Catálogo de Badges", url: "/badges", icon: Award },
       ],
@@ -66,6 +73,8 @@ const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url:
       items: [
         { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
         { title: "Consultores", url: "/utilizadores", icon: Users },
+        { title: "Ranking", url: "/leaderboard", icon: Star },
+        { title: "Assinatura Email", url: "/assinatura", icon: Mail },
       ],
     },
   ],
@@ -83,24 +92,35 @@ const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url:
       items: [
         { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
         { title: "Consultores", url: "/utilizadores", icon: Users },
+        { title: "Ranking", url: "/leaderboard", icon: Star },
+        { title: "Assinatura Email", url: "/assinatura", icon: Mail },
       ],
     },
   ],
   admin: [
     {
-      label: "Administração",
+      label: "Gestão",
       items: [
-        { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-        { title: "Gestão de Badges", url: "/admin/badges", icon: Award },
-        { title: "Gestão de Utilizadores", url: "/admin/utilizadores", icon: Users },
+        { title: "Dashboard", url: "/", icon: LayoutDashboard },
+        { title: "Utilizadores", url: "/admin/utilizadores", icon: Users },
+        { title: "Badges", url: "/admin/badges", icon: Award },
+        { title: "Estrutura LP", url: "/admin/estrutura", icon: ShieldCheck },
+      ],
+    },
+    {
+      label: "Configuração",
+      items: [
+        { title: "Avisos", url: "/admin/avisos", icon: Bell },
+        { title: "Notificações", url: "/admin/notificacoes", icon: Megaphone },
+        { title: "Políticas RGPD", url: "/admin/rgpd", icon: FileText },
         { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
-        { title: "Permissões", url: "/admin/permissoes", icon: ShieldCheck },
       ],
     },
   ],
 };
 
 const bottomItems = [
+  { title: "Avisos", url: "/avisos", icon: Megaphone },
   { title: "Definições", url: "/settings", icon: Settings },
 ];
 
@@ -179,7 +199,10 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <button
-                onClick={() => { logout(); window.location.href = "/login"; }}
+                onClick={() => {
+                  // Disparar evento para o AppLayout abrir o modal de confirmação
+                  window.dispatchEvent(new CustomEvent("logout-request"));
+                }}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive/70 hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="h-4 w-4 shrink-0" />

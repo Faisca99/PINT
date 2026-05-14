@@ -2,212 +2,301 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Award,
-  ExternalLink,
-  Share2,
-  Star,
-  Hexagon,
-  Calendar,
-  CheckCircle2,
-  RefreshCw,
-} from "lucide-react";
+import { Hexagon, Award, RefreshCw, AlertCircle, ExternalLink, CheckCircle2, Globe, X, ShieldCheck, Share2, Download } from "lucide-react";
+import { downloadCertificate } from "@/lib/certificate";
+import Link from "next/link";
+import AppLayout from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AppLayout from "@/components/AppLayout";
 import { api } from "@/lib/api";
 import { useUser } from "@/lib/user-context";
 
-interface BadgeDetail {
+interface UserBadge {
   id: number;
-  name: string;
+  badge_id: number;
+  badge_name: string;
   description: string;
+  badge_type: string;
   points: number;
-  level_code: string;
-  level_name: string;
-  area_name: string;
-  service_line_name: string;
+  level_code: string | null;
+  level_name: string | null;
+  area_name: string | null;
+  awarded_at: string;
+  expires_at: string | null;
+  public_token: string | null;
 }
 
-interface EarnedBadge {
-  applicationId: number;
-  badgeId: number;
-  badgeName: string;
-  closedAt: string | null;
-  detail: BadgeDetail | null;
-}
-
-const LEVEL_CONFIG: Record<string, { label: string; color: string }> = {
-  A: { label: "Júnior", color: "bg-success/10 text-success" },
-  B: { label: "Intermédio", color: "bg-info/10 text-info" },
-  C: { label: "Sénior", color: "bg-warning/10 text-warning" },
-  D: { label: "Especialista", color: "bg-primary/10 text-primary" },
-  E: { label: "Líder de Conhecimento", color: "bg-destructive/10 text-destructive" },
+const LEVEL_COLORS: Record<string, string> = {
+  A: "bg-green-100 text-green-700 border-green-200",
+  B: "bg-blue-100 text-blue-700 border-blue-200",
+  C: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  D: "bg-purple-100 text-purple-700 border-purple-200",
+  E: "bg-red-100 text-red-700 border-red-200",
 };
-
-function getLevelConfig(code: string | undefined) {
-  const key = code?.[0]?.toUpperCase();
-  return LEVEL_CONFIG[key ?? ""] ?? { label: code ?? "—", color: "bg-muted/10 text-muted-foreground" };
-}
 
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
 export default function MyBadgesPage() {
   const { user } = useUser();
-  const [earned, setEarned] = useState<EarnedBadge[]>([]);
+  const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [rgpdModal, setRgpdModal] = useState<UserBadge | null>(null);
+  const [rgpdAccepted, setRgpdAccepted] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-    async function load() {
-      try {
-        const [appsRes, badgesRes] = await Promise.all([
-          api.get("/applications"),
-          api.get("/badges"),
-        ]);
-
-        const badgesMap: Record<number, BadgeDetail> = {};
-        for (const b of badgesRes.data) {
-          badgesMap[b.id] = b;
-        }
-
-        const approved = appsRes.data.filter(
-          (a: any) =>
-            Number(a.applicant_user_id) === user!.id &&
-            a.status === "closed" &&
-            a.final_result === "approved"
-        );
-
-        setEarned(
-          approved.map((a: any) => ({
-            applicationId: a.id,
-            badgeId: a.badge_id,
-            badgeName: a.badge_name,
-            closedAt: a.closed_at,
-            detail: badgesMap[a.badge_id] ?? null,
-          }))
-        );
-      } catch {
-        setEarned([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [user?.id]);
-
-  if (!user) return null;
-
-  const shareLinkedIn = (badgeName: string) => {
-    const text = encodeURIComponent(`Obtive o badge "${badgeName}" na plataforma Softinsa!`);
-    window.open(`https://www.linkedin.com/shareArticle?mini=true&title=${text}`, "_blank");
+  const fetchBadges = () => {
+    api.get("/me/badges")
+      .then((r) => setBadges(r.data ?? []))
+      .catch(() => setError("Não foi possível carregar os teus badges."))
+      .finally(() => setLoading(false));
   };
+
+  useEffect(() => { fetchBadges(); }, []);
+
+  const handlePublish = async () => {
+    if (!rgpdModal || !rgpdAccepted) return;
+    setPublishing(true);
+    try {
+      await api.post(`/me/badges/${rgpdModal.id}/publish`);
+      setBadges((prev) => prev.map((b) => b.id === rgpdModal.id ? { ...b, is_published: true } : b));
+      setRgpdModal(null);
+      setRgpdAccepted(false);
+    } catch {
+      alert("Erro ao publicar badge.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
+  const totalPoints = badges.reduce((s, b) => s + (b.points ?? 0), 0);
 
   return (
     <AppLayout>
+      {/* Modal RGPD */}
+      {rgpdModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                Publicar Badge
+              </h2>
+              <button onClick={() => { setRgpdModal(null); setRgpdAccepted(false); }}>
+                <X className="h-5 w-5 text-muted-foreground" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Ao publicar <strong className="text-foreground">{rgpdModal.badge_name}</strong>, este badge ficará visível
+              publicamente e verificável por qualquer pessoa através do link único.
+            </p>
+            <div className="p-3 rounded-lg border border-border bg-muted/30 text-xs text-muted-foreground mb-4 max-h-32 overflow-y-auto">
+              <p className="font-medium text-foreground mb-1">Política de Privacidade (RGPD)</p>
+              <p>
+                Declaro que consinto no tratamento dos meus dados pessoais para efeitos de certificação,
+                publicação e partilha de competências profissionais verificáveis, de acordo com o RGPD
+                (Regulamento (UE) 2016/679). Os dados publicados incluem o meu nome e as competências
+                certificadas associadas a este badge.
+              </p>
+            </div>
+            <label className="flex items-start gap-3 cursor-pointer mb-5">
+              <input
+                type="checkbox"
+                checked={rgpdAccepted}
+                onChange={(e) => setRgpdAccepted(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded"
+              />
+              <span className="text-sm text-foreground">
+                Li e aceito os termos de privacidade e consinto na publicação deste badge.
+              </span>
+            </label>
+            <div className="flex gap-3">
+              <Button onClick={handlePublish} disabled={!rgpdAccepted || publishing} className="flex-1 gap-2">
+                {publishing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                {publishing ? "A publicar..." : "Confirmar e Publicar"}
+              </Button>
+              <Button variant="outline" onClick={() => { setRgpdModal(null); setRgpdAccepted(false); }}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-5xl mx-auto space-y-6">
         <motion.div {...fadeIn} transition={{ delay: 0.05 }}>
-          <h1 className="text-2xl font-bold text-foreground">Meus Badges</h1>
-          <p className="text-muted-foreground mt-1">
-            Os teus badges obtidos e certificações verificáveis
-          </p>
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                <Hexagon className="h-6 w-6 text-accent" />
+                Meus Badges
+              </h1>
+              <p className="text-muted-foreground mt-1 text-sm">Badges que já obtiveste e foram aprovados</p>
+            </div>
+            {user && (
+              <Link href={`/galeria/${user.id}`} target="_blank">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Globe className="h-4 w-4" />
+                  Ver Galeria Pública
+                </Button>
+              </Link>
+            )}
+          </div>
         </motion.div>
 
-        {loading ? (
-          <div className="p-12 text-center text-muted-foreground">
-            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
-            A carregar...
+        {/* Stats */}
+        <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {[
+              { icon: Award, value: badges.length, label: "Badges Obtidos", color: "bg-primary/10 text-primary" },
+              { icon: null, value: totalPoints, label: "Pontos Totais", color: "bg-yellow-500/10 text-yellow-600", emoji: "⚡" },
+              { icon: CheckCircle2, value: badges.filter((b) => b.is_published).length, label: "Publicados", color: "bg-green-500/10 text-green-600" },
+            ].map((s, i) => (
+              <Card key={s.label} className="border border-border shadow-sm">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${s.color}`}>
+                    {s.emoji ? <span className="text-sm font-bold">{s.emoji}</span> : s.icon && <s.icon className="h-4 w-4" />}
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-foreground">{loading ? "—" : s.value}</div>
+                    <div className="text-xs text-muted-foreground">{s.label}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        ) : earned.length === 0 ? (
-          <div className="text-center py-20">
-            <Hexagon className="h-16 w-16 text-muted-foreground/20 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">Ainda sem badges</h3>
-            <p className="text-muted-foreground text-sm">
-              Candidata-te a um badge para começar a tua coleção!
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {earned.map((eb, i) => {
-              const levelCfg = getLevelConfig(eb.detail?.level_code);
-              return (
-                <motion.div
-                  key={eb.applicationId}
-                  {...fadeIn}
-                  transition={{ delay: 0.1 + i * 0.05 }}
-                >
-                  <Card className="border border-border shadow-card hover:shadow-card-hover transition-all overflow-hidden">
-                    <div className="h-2 gradient-primary" />
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4 mb-4">
-                        <div className="h-14 w-14 rounded-xl gradient-primary flex items-center justify-center shrink-0 shadow-glow">
-                          <Award className="h-7 w-7 text-primary-foreground" />
+        </motion.div>
+
+        {/* Grid de badges */}
+        <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
+          {loading ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
+              A carregar badges...
+            </div>
+          ) : error ? (
+            <div className="p-8 text-center">
+              <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          ) : badges.length === 0 ? (
+            <Card className="border border-border">
+              <CardContent className="p-12 text-center text-muted-foreground">
+                <Hexagon className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                <p className="text-sm font-medium">Ainda não tens badges aprovados.</p>
+                <p className="text-xs mt-1">Candidata-te no catálogo para começar!</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {badges.map((badge, i) => {
+                const levelKey = badge.level_code?.charAt(0) ?? "";
+                const levelColor = LEVEL_COLORS[levelKey] ?? "bg-gray-100 text-gray-600 border-gray-200";
+                const expired = badge.expires_at && new Date(badge.expires_at) < new Date();
+
+                return (
+                  <motion.div key={badge.id} {...fadeIn} transition={{ delay: 0.04 * i }}>
+                    <Card className={`border shadow-card hover:shadow-card-hover transition-shadow h-full ${expired ? "opacity-60" : "border-border"}`}>
+                      <CardContent className="p-5 flex flex-col h-full">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <span className="text-lg font-bold text-primary">{badge.level_code ?? "?"}</span>
+                          </div>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${levelColor}`}>
+                            {badge.level_name ?? badge.badge_type}
+                          </span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-base font-semibold text-foreground leading-snug">
-                            {eb.badgeName}
-                          </h3>
-                          {eb.detail && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {eb.detail.area_name} · {eb.detail.service_line_name}
-                            </p>
-                          )}
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${levelCfg.color}`}>
-                              {eb.detail?.level_code ? `Nível ${eb.detail.level_code}` : "—"} · {levelCfg.label}
-                            </span>
-                            {eb.detail?.points != null && (
-                              <span className="flex items-center gap-1 text-xs text-warning font-medium">
-                                <Star className="h-3 w-3" />
-                                {eb.detail.points} pts
-                              </span>
+
+                        <div className="flex-1">
+                          <h3 className="text-sm font-semibold text-foreground leading-tight mb-1">{badge.badge_name}</h3>
+                          {badge.area_name && <p className="text-xs text-muted-foreground mb-1">{badge.area_name}</p>}
+                          {badge.description && <p className="text-xs text-muted-foreground line-clamp-2">{badge.description}</p>}
+                        </div>
+
+                        <div className="mt-3 pt-3 border-t border-border space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xs text-muted-foreground">
+                                {expired ? "⚠️ Expirado" : `Obtido em ${new Date(badge.awarded_at).toLocaleDateString("pt-PT")}`}
+                              </div>
+                              {badge.points > 0 && (
+                                <div className="text-xs font-medium text-yellow-600">+{badge.points} pts</div>
+                              )}
+                            </div>
+                            {badge.public_token && badge.is_published && (
+                              <a
+                                href={`/verify/${badge.public_token}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-accent hover:underline"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                Verificar
+                              </a>
                             )}
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 mb-5">
-                        {eb.closedAt && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Calendar className="h-3.5 w-3.5" />
-                            <span>Obtido a {new Date(eb.closedAt).toLocaleDateString("pt-PT")}</span>
+                          <div className="flex gap-2">
+                            {!badge.is_published && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setRgpdModal(badge)}
+                                className="flex-1 gap-1.5 text-xs h-7 border-primary/30 text-primary hover:bg-primary/5"
+                              >
+                                <Globe className="h-3 w-3" />
+                                Publicar
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => downloadCertificate({
+                                consultantName: user?.name ?? "",
+                                badgeName: badge.badge_name,
+                                levelCode: badge.level_code,
+                                levelName: badge.level_name,
+                                areaName: badge.area_name,
+                                serviceLineName: null,
+                                awardedAt: badge.awarded_at,
+                                verifyUrl: badge.public_token
+                                  ? `${typeof window !== "undefined" ? window.location.origin : ""}/verify/${badge.public_token}`
+                                  : undefined,
+                                pointsAwarded: badge.points,
+                              })}
+                              className={`${badge.is_published ? "w-full" : ""} gap-1.5 text-xs h-7`}
+                            >
+                              <Download className="h-3 w-3" />
+                              Certificado
+                            </Button>
                           </div>
-                        )}
-                        <div className="flex items-center gap-2 text-xs text-success">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          <span>Verificado</span>
+                          {badge.is_published && (
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-1 text-xs text-green-600">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Publicado e verificável
+                              </div>
+                              {badge.public_token && (
+                                <a
+                                  href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? `${window.location.origin}/verify/${badge.public_token}` : "")}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 text-xs text-[#0077b5] hover:underline font-medium"
+                                >
+                                  <Share2 className="h-3 w-3" />
+                                  Partilhar no LinkedIn
+                                </a>
+                              )}
+                            </div>
+                          )}
                         </div>
-                      </div>
-
-                      <div className="flex gap-2 pt-3 border-t border-border">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-xs"
-                          onClick={() => shareLinkedIn(eb.badgeName)}
-                        >
-                          <Share2 className="h-3.5 w-3.5 mr-1.5" />
-                          LinkedIn
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 text-xs"
-                          asChild
-                        >
-                          <a href={`/badges/${eb.badgeId}`}>
-                            <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                            Ver Badge
-                          </a>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
       </div>
     </AppLayout>
   );
