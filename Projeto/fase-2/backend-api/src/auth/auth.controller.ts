@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Headers, Post, Patch, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Patch, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { getUserIdFromHeader } from '../common/auth/auth.helper';
 
 type LoginBody = {
   email: string;
@@ -38,8 +39,7 @@ export class AuthController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: { password: string },
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) throw new UnauthorizedException('x-user-id header invalido');
+    const userId = getUserIdFromHeader(userIdHeader);
     if (!body.password) throw new BadRequestException('Password obrigatória');
     await this.authService.changePassword(userId, body.password);
     return { ok: true };
@@ -50,8 +50,7 @@ export class AuthController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: { area_id?: number; full_name?: string },
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) throw new UnauthorizedException('x-user-id header invalido');
+    const userId = getUserIdFromHeader(userIdHeader);
     await this.authService.updateProfile(userId, body);
     return { ok: true };
   }
@@ -73,11 +72,6 @@ export class AuthController {
 
   @Get('me')
   async me(@Headers('x-user-id') userIdHeader: string) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
-
-    return this.authService.me(userId);
+    return this.authService.me(getUserIdFromHeader(userIdHeader));
   }
 }

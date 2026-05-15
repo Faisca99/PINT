@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, PlusCircle, RefreshCw, AlertCircle, X, ToggleLeft, ToggleRight } from "lucide-react";
+import { Bell, PlusCircle, RefreshCw, AlertCircle, X, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,6 +75,14 @@ export default function AdminAvisosPage() {
       await api.patch(`/admin/notices/${id}/status`, { active });
       setNotices((prev) => prev.map((n) => n.id === id ? { ...n, is_active: active } : n));
     } catch { alert("Erro ao alterar estado."); }
+  };
+
+  const handleDelete = async (id: number, title: string) => {
+    if (!confirm(`Tens a certeza que queres remover o aviso "${title}"? Esta ação é irreversível.`)) return;
+    try {
+      await api.delete(`/admin/notices/${id}`);
+      setNotices((prev) => prev.filter((n) => n.id !== id));
+    } catch { alert("Erro ao remover aviso."); }
   };
 
   return (
@@ -190,11 +198,18 @@ export default function AdminAvisosPage() {
                           )}
                         </div>
                       </div>
-                      <Button size="sm" variant="ghost" onClick={() => handleToggle(n.id, !n.is_active)}
-                        className={`gap-1.5 text-xs shrink-0 ${n.is_active ? "text-red-600 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}>
-                        {n.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                        {n.is_active ? "Desativar" : "Ativar"}
-                      </Button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Button size="sm" variant="ghost" onClick={() => handleToggle(n.id, !n.is_active)}
+                          className={`gap-1.5 text-xs ${n.is_active ? "text-red-600 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}>
+                          {n.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                          {n.is_active ? "Desativar" : "Ativar"}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleDelete(n.id, n.title)}
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          title="Remover aviso">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </motion.div>
                   ))}
                 </div>

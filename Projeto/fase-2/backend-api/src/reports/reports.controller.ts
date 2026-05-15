@@ -9,10 +9,11 @@ export class ReportsController {
   async applications(
     @Query('status') status?: string,
     @Query('area') areaName?: string,
+    @Query('service_line') serviceLineName?: string,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.reportsService.applications({ status, areaName, from, to });
+    return this.reportsService.applications({ status, areaName, serviceLineName, from, to });
   }
 
   @Get('summary')

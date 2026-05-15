@@ -28,6 +28,8 @@ import { useUser, ROLE_LABELS } from "@/lib/user-context";
 interface Evidence {
   id: number;
   requirement_id: number;
+  requirement_code: string | null;
+  requirement_title: string | null;
   file_name: string;
   file_url: string;
   description: string;
@@ -308,7 +310,12 @@ export default function ValidacaoDetailPage() {
                     >
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-foreground">
-                          Requisito #{ev.requirement_id} — Evidência {i + 1}
+                          {ev.requirement_code && (
+                            <span className="font-mono text-xs text-muted-foreground mr-1.5 px-1.5 py-0.5 bg-muted rounded">
+                              {ev.requirement_code}
+                            </span>
+                          )}
+                          {ev.requirement_title ?? `Requisito #${ev.requirement_id}`}
                         </div>
                         {ev.description && (
                           <div className="text-xs text-muted-foreground mt-0.5 truncate">{ev.description}</div>

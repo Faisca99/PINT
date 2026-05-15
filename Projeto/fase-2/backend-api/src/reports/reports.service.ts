@@ -8,6 +8,7 @@ export class ReportsService {
   async applications(filters: {
     status?: string;
     areaName?: string;
+    serviceLineName?: string;
     from?: string;
     to?: string;
   }) {
@@ -22,6 +23,10 @@ export class ReportsService {
     if (filters.areaName) {
       conditions.push(`a.name ILIKE $${i++}`);
       params.push(`%${filters.areaName}%`);
+    }
+    if (filters.serviceLineName) {
+      conditions.push(`sl.name = $${i++}`);
+      params.push(filters.serviceLineName);
     }
     if (filters.from) {
       conditions.push(`ba.created_at >= $${i++}`);

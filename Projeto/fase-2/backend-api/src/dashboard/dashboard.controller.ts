@@ -1,14 +1,13 @@
-import { Body, Controller, Get, Post, Param, ParseIntPipe, Headers, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, ParseIntPipe, Headers, NotFoundException } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
+import { getUserIdFromHeader } from '../common/auth/auth.helper';
 
 @Controller('me')
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
   private getUserId(header: string): number {
-    const id = Number(header);
-    if (!Number.isFinite(id) || id <= 0) throw new UnauthorizedException('x-user-id header invalido');
-    return id;
+    return getUserIdFromHeader(header);
   }
 
   @Get('dashboard')
@@ -29,6 +28,16 @@ export class DashboardController {
   @Get('timeline')
   async timeline(@Headers('x-user-id') h: string) {
     return this.dashboardService.timeline(this.getUserId(h));
+  }
+
+  @Get('timeline/:userId')
+  async timelineForUser(@Param('userId', ParseIntPipe) userId: number) {
+    const [events, consultant] = await Promise.all([
+      this.dashboardService.timeline(userId),
+      this.dashboardService.getUserName(userId),
+    ]);
+    if (!consultant) throw new NotFoundException('Consultor não encontrado');
+    return { events, consultant };
   }
 
   @Get('reminders')

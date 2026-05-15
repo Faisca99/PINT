@@ -33,6 +33,14 @@ export class DashboardService {
     return { ok: true };
   }
 
+  async getUserName(userId: number) {
+    const res = await this.db.query<{ full_name: string; email: string }>(
+      `SELECT full_name, email FROM users WHERE id = $1`,
+      [userId],
+    );
+    return res.rows[0] ?? null;
+  }
+
   async timeline(userId: number) {
     // Combina candidaturas + badges atribuídos + conquistas numa timeline cronológica
     const res = await this.db.query(

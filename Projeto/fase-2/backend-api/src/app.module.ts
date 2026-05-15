@@ -8,9 +8,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { UsersModule } from './users/users.module';
 import { ReportsModule } from './reports/reports.module';
 import { AdminModule } from './admin/admin.module';
+import { WebhookModule } from './common/webhook/webhook.module';
 import { EmailModule } from './common/email/email.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, EmailModule, AuthModule, BadgesModule, ApplicationsModule, DashboardModule, UsersModule, ReportsModule, AdminModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule, EmailModule, WebhookModule, AuthModule, BadgesModule, ApplicationsModule, DashboardModule, UsersModule, ReportsModule, AdminModule],
 })
 export class AppModule {}

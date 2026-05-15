@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Award, User, Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { Shield, User, Mail, Lock, ChevronRight, Eye, EyeOff, Loader2, AlertCircle, ChevronDown } from "lucide-react";
+import { SoftinsaLogo } from "@/components/SoftinsaLogo";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
@@ -44,113 +46,162 @@ export default function RegisterPage() {
     }
   };
 
+  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+    setForm((p) => ({ ...p, [key]: e.target.value }));
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 w-full">
-      <div className="max-w-md w-full bg-card rounded-2xl shadow-card border border-border p-8">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 gradient-primary rounded-full flex items-center justify-center mb-4 shadow-glow">
-            <Award className="w-8 h-8 text-primary-foreground" />
+    <div className="flex min-h-screen">
+      {/* Painel esquerdo — Hero */}
+      <div className="hidden lg:flex lg:w-3/5 relative overflow-hidden">
+        <img src="/hero-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <div className="absolute inset-0 gradient-hero opacity-80" />
+        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
+          <div className="flex items-center gap-3">
+            <SoftinsaLogo size={40} />
+            <span className="text-xl font-bold text-primary-foreground tracking-tight">Softinsa Badges</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Criar Conta</h1>
-          <p className="text-muted-foreground text-sm mt-1">Regista-te na plataforma Softinsa Badges</p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="max-w-lg"
+          >
+            <h1 className="text-5xl font-bold text-primary-foreground leading-tight mb-6">
+              Inicia a tua
+              <br />
+              <span className="text-accent">jornada técnica</span>
+            </h1>
+            <p className="text-lg text-primary-foreground/70 leading-relaxed">
+              Regista-te na plataforma de badges digitais da Softinsa e começa a evidenciar as tuas competências profissionais.
+            </p>
+          </motion.div>
+
+          <div className="flex gap-8">
+            {[
+              { value: "15+", label: "Badges disponíveis" },
+              { value: "3", label: "Service Lines" },
+              { value: "5", label: "Níveis de progressão" },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <div className="text-2xl font-bold text-accent">{stat.value}</div>
+                <div className="text-sm text-primary-foreground/50">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nome */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Nome completo</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-4 w-4 text-muted-foreground" />
+      {/* Painel direito — Formulário */}
+      <div className="w-full lg:w-2/5 flex items-center justify-center p-8 bg-background overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md py-8"
+        >
+          {/* Logo mobile */}
+          <div className="flex lg:hidden items-center gap-3 mb-10">
+            <SoftinsaLogo size={36} />
+            <span className="text-lg font-bold text-foreground tracking-tight">Softinsa Badges</span>
+          </div>
+
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Criar conta</h2>
+            <p className="text-muted-foreground">Regista-te para começar a tua jornada</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Nome */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground block">Nome completo</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input type="text" required value={form.full_name} onChange={set("full_name")}
+                  placeholder="Nome Sobrenome"
+                  className="pl-10 h-11 w-full bg-card border border-border text-foreground rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground" />
               </div>
-              <input type="text" required value={form.full_name}
-                onChange={(e) => setForm((p) => ({ ...p, full_name: e.target.value }))}
-                className="pl-10 w-full bg-background border border-border text-foreground rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="Nome Sobrenome" />
             </div>
-          </div>
 
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Email corporativo</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-4 w-4 text-muted-foreground" />
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground block">Email corporativo</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input type="email" required value={form.email} onChange={set("email")}
+                  placeholder="nome@softinsa.pt"
+                  className="pl-10 h-11 w-full bg-card border border-border text-foreground rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground" />
               </div>
-              <input type="email" required value={form.email}
-                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                className="pl-10 w-full bg-background border border-border text-foreground rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="nome@softinsa.pt" />
             </div>
-          </div>
 
-          {/* Área */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              Área preferencial <span className="text-muted-foreground font-normal">(opcional)</span>
-            </label>
-            <div className="relative">
-              <select value={form.area_id} onChange={(e) => setForm((p) => ({ ...p, area_id: e.target.value }))}
-                className="w-full appearance-none bg-background border border-border text-foreground rounded-lg px-3 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                <option value="">— Seleciona a tua área —</option>
-                {areas.map((a) => (
-                  <option key={a.id} value={a.id}>{a.name} ({a.service_line_name})</option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Os badges da tua área serão mostrados em destaque no dashboard.</p>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-muted-foreground" />
+            {/* Área */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground block">
+                Área preferencial <span className="text-muted-foreground font-normal">(opcional)</span>
+              </label>
+              <div className="relative">
+                <select value={form.area_id} onChange={set("area_id")}
+                  className="h-11 w-full appearance-none bg-card border border-border text-foreground rounded-md px-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="">— Seleciona a tua área —</option>
+                  {areas.map((a) => (
+                    <option key={a.id} value={a.id}>{a.name} ({a.service_line_name})</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               </div>
-              <input type={showPass ? "text" : "password"} required value={form.password}
-                onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
-                className="pl-10 pr-10 w-full bg-background border border-border text-foreground rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="Mínimo 6 caracteres" />
-              <button type="button" onClick={() => setShowPass((v) => !v)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-muted-foreground hover:text-foreground">
-                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
+              <p className="text-xs text-muted-foreground">Os badges da tua área serão mostrados em destaque no dashboard.</p>
             </div>
-          </div>
 
-          {/* Confirmar */}
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">Confirmar password</label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-4 w-4 text-muted-foreground" />
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground block">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input type={showPass ? "text" : "password"} required value={form.password} onChange={set("password")}
+                  placeholder="Mínimo 6 caracteres"
+                  className="pl-10 pr-10 h-11 w-full bg-card border border-border text-foreground rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground" />
+                <button type="button" onClick={() => setShowPass((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                  {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-              <input type="password" required value={form.confirm}
-                onChange={(e) => setForm((p) => ({ ...p, confirm: e.target.value }))}
-                className="pl-10 w-full bg-background border border-border text-foreground rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="Repete a password" />
             </div>
+
+            {/* Confirmar */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground block">Confirmar password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input type="password" required value={form.confirm} onChange={set("confirm")}
+                  placeholder="Repete a password"
+                  className="pl-10 h-11 w-full bg-card border border-border text-foreground rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 placeholder:text-muted-foreground" />
+              </div>
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                <AlertCircle className="h-4 w-4 shrink-0" />{error}
+              </div>
+            )}
+
+            <button type="submit" disabled={loading}
+              className="w-full h-11 flex items-center justify-center gap-2 rounded-md gradient-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Criar Conta <ChevronRight className="h-4 w-4" /></>}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <span className="text-sm text-muted-foreground">Já tens conta? </span>
+            <Link href="/login" className="text-sm font-medium text-accent hover:underline">Entrar</Link>
           </div>
 
-          {error && (
-            <div className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-              <AlertCircle className="h-4 w-4 shrink-0" />{error}
+          <div className="mt-12 pt-6 border-t border-border">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Shield className="h-3.5 w-3.5" />
+              <span>Acesso restrito a colaboradores Softinsa</span>
             </div>
-          )}
-
-          <button type="submit" disabled={loading}
-            className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold text-primary-foreground gradient-primary hover:opacity-90 focus:outline-none disabled:opacity-50 transition-all mt-2">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {loading ? "A criar conta..." : "Criar Conta"}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          Já tens conta?{" "}
-          <Link href="/login" className="text-primary hover:underline font-medium">Entrar</Link>
-        </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

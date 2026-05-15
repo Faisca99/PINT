@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Users, RefreshCw, AlertCircle, Search, Award, Zap, Download } from "lucide-react";
+import { Users, RefreshCw, AlertCircle, Search, Award, Zap, Download, Clock } from "lucide-react";
+import Link from "next/link";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -128,6 +129,7 @@ export default function UtilizadoresPage() {
                         <th className="px-6 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Badges</th>
                         <th className="px-6 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Pontos</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden lg:table-cell">Último acesso</th>
+                        <th className="px-6 py-3"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
@@ -173,6 +175,14 @@ export default function UtilizadoresPage() {
                             {user.last_login_at
                               ? new Date(user.last_login_at).toLocaleDateString("pt-PT")
                               : "Nunca"}
+                          </td>
+                          <td className="px-6 py-4">
+                            <Link href={`/timeline/${user.id}`}>
+                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-muted-foreground hover:text-accent">
+                                <Clock className="h-3.5 w-3.5" />
+                                Timeline
+                              </Button>
+                            </Link>
                           </td>
                         </motion.tr>
                       ))}

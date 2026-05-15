@@ -159,7 +159,12 @@ export default function ApplicationForm() {
                 {evidences.map((ev: any, i: number) => (
                   <div key={ev.id ?? i} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
                     <div className="min-w-0">
-                      <div className="text-xs font-medium text-foreground">Requisito #{ev.requirement_id}</div>
+                      <div className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                        {ev.requirement_code && (
+                          <span className="font-mono px-1 py-0.5 bg-muted rounded text-muted-foreground text-xs">{ev.requirement_code}</span>
+                        )}
+                        {ev.requirement_title ?? `Requisito #${ev.requirement_id}`}
+                      </div>
                       {ev.description && <div className="text-xs text-muted-foreground truncate">{ev.description}</div>}
                     </div>
                     {ev.file_url && (

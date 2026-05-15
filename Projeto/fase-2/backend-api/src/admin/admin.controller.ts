@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, ParseIntPipe, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, ParseIntPipe, Patch, Post, Query, UnauthorizedException } from '@nestjs/common';
 import { AdminService } from './admin.service';
 
 @Controller('admin')
@@ -74,6 +74,11 @@ export class AdminController {
     return this.adminService.toggleNotice(id, body.active);
   }
 
+  @Delete('notices/:id')
+  deleteNotice(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteNotice(id);
+  }
+
   // Estrutura
   @Get('structure')
   getStructure() { return this.adminService.getStructure(); }
@@ -93,6 +98,17 @@ export class AdminController {
   @Get('service-lines')
   listSLs() { return this.adminService.listServiceLines(); }
 
+  @Patch('structure/:entity/:id/status')
+  toggleEntity(
+    @Param('entity') entity: string,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { active: boolean },
+  ) {
+    const allowed = ['learning_paths', 'service_lines', 'areas', 'levels', 'requirements'];
+    if (!allowed.includes(entity)) throw new Error('Entidade inválida');
+    return this.adminService.toggleEntity(entity as any, id, body.active);
+  }
+
   @Post('learning-paths')
   createLP(@Body() body: any) {
     return this.adminService.createLearningPath({ code: body.code, name: body.name, description: body.description });
@@ -111,6 +127,36 @@ export class AdminController {
   @Post('levels')
   createLevel(@Body() body: any) {
     return this.adminService.createLevel({ areaId: body.area_id, code: body.code, name: body.name, rankOrder: body.rank_order, description: body.description });
+  }
+
+  // SLAs
+  @Get('slas')
+  listSlas() { return this.adminService.listSlas(); }
+
+  @Post('slas')
+  createSla(@Headers('x-user-id') h: string, @Body() body: any) {
+    const userId = Number(h);
+    if (!Number.isFinite(userId) || userId <= 0) throw new UnauthorizedException();
+    return this.adminService.createSla({
+      createdBy: userId,
+      teamType: body.team_type,
+      limitHours: body.limit_hours,
+      warningAtPercent: body.warning_at_percent ?? 80,
+    });
+  }
+
+  @Patch('slas/:id/status')
+  toggleSla(@Param('id', ParseIntPipe) id: number, @Body() body: { active: boolean }) {
+    return this.adminService.toggleSla(id, body.active);
+  }
+
+  // Integrações Teams/Slack
+  @Get('integrations')
+  getIntegrations() { return this.adminService.getIntegrations(); }
+
+  @Post('integrations')
+  saveIntegration(@Body() body: { provider: string; webhook_url: string; active: boolean }) {
+    return this.adminService.saveIntegration(body.provider, body.webhook_url, body.active);
   }
 
   // RGPD

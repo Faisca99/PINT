@@ -1,90 +1,190 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Award, Lock, Search, Loader2 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Award, Search, RefreshCw, Zap, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import AppLayout from "@/components/AppLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { api } from "@/lib/api";
 
 interface Badge {
-  id: string;
+  id: number;
+  code: string;
   name: string;
   description: string;
-  level_name: string;
-  area_name: string;
-  service_line_name: string;
+  badge_type: string;
   points: number;
+  level_code: string | null;
+  level_name: string | null;
+  area_name: string | null;
+  service_line_name: string | null;
+  learning_path_name: string | null;
 }
+
+const LEVEL_COLORS: Record<string, string> = {
+  A: "bg-green-100 text-green-700 border-green-200",
+  B: "bg-blue-100 text-blue-700 border-blue-200",
+  C: "bg-yellow-100 text-yellow-700 border-yellow-200",
+  D: "bg-purple-100 text-purple-700 border-purple-200",
+  E: "bg-red-100 text-red-700 border-red-200",
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  level: "Nível",
+  special: "Conquista",
+  premium: "Premium",
+};
+
+const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
 export default function BadgesCatalog() {
   const [badges, setBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [search, setSearch] = useState("");
+  const [filterSL, setFilterSL] = useState("all");
 
   useEffect(() => {
-    async function fetchBadges() {
-      try {
-        const res = await api.get('/badges');
-        setBadges(res.data || []);
-      } catch (error) {
-        console.error('Erro ao carregar badges:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchBadges();
+    api.get("/badges")
+      .then((r) => setBadges(r.data ?? []))
+      .finally(() => setLoading(false));
   }, []);
 
-  const filteredBadges = badges.filter(b => 
-    b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    b.service_line_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    b.area_name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const servicelines = Array.from(new Set(badges.map((b) => b.service_line_name).filter(Boolean)));
+
+  const filtered = badges.filter((b) => {
+    const matchSearch =
+      b.name.toLowerCase().includes(search.toLowerCase()) ||
+      (b.area_name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+      (b.service_line_name ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchSL = filterSL === "all" || b.service_line_name === filterSL;
+    return matchSearch && matchSL;
+  });
 
   return (
-    <div className="p-8">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Catálogo de Badges</h1>
-        <p className="text-gray-500">Explora os níveis e candidata-te aos que tens competências.</p>
-      </header>
+    <AppLayout>
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <motion.div {...fadeIn} transition={{ delay: 0.05 }}>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Award className="h-6 w-6 text-accent" />
+            Catálogo de Badges
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Explora todos os badges disponíveis e candidata-te aos que tens competências
+          </p>
+        </motion.div>
 
-      <div className="flex mb-6 bg-white p-2 rounded-lg border border-gray-200 shadow-sm w-full md:w-1/2 items-center">
-        <Search className="w-5 h-5 text-gray-400 mx-2" />
-        <input 
-          type="text" 
-          placeholder="Pesquisar badges (ex: LowCode, DevOps)..." 
-          className="flex-1 outline-none text-gray-700 bg-transparent"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center items-center py-20">
-          <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
-        </div>
-      ) : filteredBadges.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-gray-200">
-          <p className="text-gray-500">Nenhum badge encontrado na base de dados.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBadges.map((badge) => (
-            <div key={badge.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:border-blue-400 transition cursor-pointer">
-              <div className="absolute top-2 right-2 bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
-                <Lock className="w-3 h-3"/> {badge.points} pts
-              </div>
-              <div className="h-2 bg-gray-200"></div>
-              <div className="p-6 flex flex-col items-center">
-                <Award className="w-16 h-16 text-gray-400 mb-4" />
-                <h3 className="font-bold text-lg text-center text-gray-900">{badge.level_name} - {badge.name}</h3>
-                <p className="text-sm text-gray-500 text-center mb-4">{badge.service_line_name} / {badge.area_name}</p>
-                <a href={`/badges/${badge.id}`} className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-center inline-block">
-                  Ver Detalhes do Badge
-                </a>
-              </div>
+        {/* Filtros */}
+        <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Pesquisar badges, áreas..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              />
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+            <select
+              value={filterSL}
+              onChange={(e) => setFilterSL(e.target.value)}
+              className="bg-background border border-border rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            >
+              <option value="all">Todas as Service Lines</option>
+              {servicelines.map((sl) => (
+                <option key={sl} value={sl!}>{sl}</option>
+              ))}
+            </select>
+          </div>
+        </motion.div>
+
+        {/* Contagem */}
+        {!loading && (
+          <p className="text-xs text-muted-foreground">
+            {filtered.length} badge{filtered.length !== 1 ? "s" : ""} encontrado{filtered.length !== 1 ? "s" : ""}
+          </p>
+        )}
+
+        {/* Grid */}
+        {loading ? (
+          <div className="p-12 text-center text-muted-foreground">
+            <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
+            A carregar badges...
+          </div>
+        ) : filtered.length === 0 ? (
+          <Card className="border border-border">
+            <CardContent className="p-12 text-center text-muted-foreground">
+              <Award className="h-10 w-10 mx-auto mb-3 opacity-20" />
+              <p className="text-sm">Nenhum badge encontrado.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((badge, i) => {
+              const levelKey = badge.level_code?.charAt(0) ?? "";
+              const levelColor = LEVEL_COLORS[levelKey] ?? "bg-gray-100 text-gray-600 border-gray-200";
+
+              return (
+                <motion.div key={badge.id} {...fadeIn} transition={{ delay: 0.04 * (i % 9) }}>
+                  <Link href={`/badges/${badge.id}`}>
+                    <Card className="border border-border shadow-card hover:shadow-card-hover hover:border-primary/30 transition-all h-full cursor-pointer group">
+                      <CardContent className="p-5 flex flex-col h-full">
+                        {/* Topo */}
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                            <span className="text-base font-bold text-primary">
+                              {badge.level_code ?? "?"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${levelColor}`}>
+                              {badge.level_name ?? TYPE_LABELS[badge.badge_type] ?? badge.badge_type}
+                            </span>
+                            {badge.points > 0 && (
+                              <span className="inline-flex items-center gap-0.5 text-xs text-yellow-600 font-medium">
+                                <Zap className="h-3 w-3" />
+                                {badge.points} pts
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="flex-1">
+                          <h3 className="text-sm font-semibold text-foreground leading-tight mb-1 group-hover:text-primary transition-colors">
+                            {badge.name}
+                          </h3>
+                          {badge.area_name && (
+                            <p className="text-xs text-muted-foreground">{badge.area_name}</p>
+                          )}
+                          {badge.service_line_name && (
+                            <p className="text-xs text-muted-foreground/70">{badge.service_line_name}</p>
+                          )}
+                          {badge.description && (
+                            <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{badge.description}</p>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground">{badge.code}</span>
+                          <span className="inline-flex items-center gap-1 text-xs text-primary font-medium group-hover:gap-1.5 transition-all">
+                            Ver detalhes
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </AppLayout>
   );
 }

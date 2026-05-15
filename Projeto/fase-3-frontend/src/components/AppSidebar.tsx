@@ -17,11 +17,14 @@ import {
   Bell,
   Mail,
   Megaphone,
+  Plug,
+  Timer,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { usePathname } from "next/navigation";
 import { useUser, UserRole } from "@/lib/user-context";
-const badgeIcon = "/softinsa-badge-icon.png";
+import { getLang, t } from "@/lib/i18n";
+import { SoftinsaLogo } from "@/components/SoftinsaLogo";
 
 import {
   Sidebar,
@@ -113,6 +116,8 @@ const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url:
         { title: "Avisos", url: "/admin/avisos", icon: Bell },
         { title: "Notificações", url: "/admin/notificacoes", icon: Megaphone },
         { title: "Políticas RGPD", url: "/admin/rgpd", icon: FileText },
+        { title: "Integrações", url: "/admin/integracoes", icon: Plug },
+        { title: "SLAs", url: "/admin/sla", icon: Timer },
         { title: "Relatórios", url: "/relatorios", icon: BarChart3 },
       ],
     },
@@ -129,8 +134,19 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const pathname = usePathname();
   const { user, logout } = useUser();
+  const lang = getLang();
 
-  const navGroups = NAV_CONFIG[user?.role ?? "consultant"] ?? NAV_CONFIG.consultant;
+  const rawGroups = NAV_CONFIG[user?.role ?? "consultant"] ?? NAV_CONFIG.consultant;
+  // Aplicar traduções aos títulos
+  const navGroups = rawGroups.map((group) => ({
+    ...group,
+    items: group.items.map((item) => ({
+      ...item,
+      title: t(`nav.${item.url.replace("/", "").replace(/\//g, "_")}`, lang) !== `nav.${item.url.replace("/", "").replace(/\//g, "_")}`
+        ? t(`nav.${item.url.replace("/", "").replace(/\//g, "_")}`, lang)
+        : item.title,
+    })),
+  }));
   const isActive = (path: string) => pathname === path || (path !== "/" && pathname.startsWith(path));
 
   return (
@@ -139,7 +155,7 @@ export function AppSidebar() {
       collapsible="icon"
     >
       <div className="p-4 flex items-center gap-3 border-b border-sidebar-border">
-        <img src={badgeIcon} alt="Softinsa" className="h-8 w-8 shrink-0" />
+        <SoftinsaLogo size={32} className="shrink-0" />
         {!collapsed && (
           <div>
             <div className="text-sm font-bold text-sidebar-primary-foreground leading-tight">Softinsa</div>
@@ -206,7 +222,7 @@ export function AppSidebar() {
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-destructive/70 hover:bg-destructive/10 transition-colors"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
-                {!collapsed && <span>Sair</span>}
+                {!collapsed && <span>{t("nav.logout", lang)}</span>}
               </button>
             </SidebarMenuButton>
           </SidebarMenuItem>

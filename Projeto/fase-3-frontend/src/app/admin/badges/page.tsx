@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Award, PlusCircle, RefreshCw, AlertCircle, X, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
+import {
+  Award, PlusCircle, RefreshCw, AlertCircle, X,
+  Pencil, ToggleLeft, ToggleRight, Search, ChevronLeft, ChevronRight, Filter,
+} from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,19 +21,25 @@ interface BadgeRow {
 interface Level { id: number; code: string; name: string; area_name: string; }
 
 const TYPE_LABELS: Record<string, string> = { level: "Nível", special: "Conquista", premium: "Premium" };
-const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
-
 const EMPTY_FORM = { level_id: "", code: "", name: "", description: "", badge_type: "level", points: "0", has_expiration: false, valid_days: "" };
+const PAGE_SIZE = 10;
 
 export default function AdminBadgesPage() {
-  const [badges, setBadges] = useState<BadgeRow[]>([]);
-  const [levels, setLevels] = useState<Level[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [badges, setBadges]       = useState<BadgeRow[]>([]);
+  const [levels, setLevels]       = useState<Level[]>([]);
+  const [loading, setLoading]     = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editBadge, setEditBadge] = useState<BadgeRow | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
+  const [form, setForm]           = useState(EMPTY_FORM);
+  const [saving, setSaving]       = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Filtros
+  const [search, setSearch]         = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterState, setFilterState] = useState("all");
+  const [filterSL, setFilterSL]     = useState("all");
+  const [page, setPage]             = useState(1);
 
   const fetchData = async () => {
     setLoading(true);
@@ -38,18 +47,41 @@ export default function AdminBadgesPage() {
       const [bRes, lRes] = await Promise.all([api.get("/admin/badges"), api.get("/admin/levels")]);
       setBadges(bRes.data ?? []);
       setLevels(lRes.data ?? []);
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchData(); }, []);
 
-  const openCreate = () => { setEditBadge(null); setForm(EMPTY_FORM); setFormError(null); setShowModal(true); };
+  // Service lines únicas
+  const servicelines = useMemo(() =>
+    Array.from(new Set(badges.map((b) => b.service_line_name).filter(Boolean))), [badges]);
 
-  const openEdit = (b: BadgeRow) => {
+  // Badges filtrados
+  const filtered = useMemo(() => {
+    return badges.filter((b) => {
+      const matchSearch = !search ||
+        b.name.toLowerCase().includes(search.toLowerCase()) ||
+        b.code.toLowerCase().includes(search.toLowerCase()) ||
+        (b.area_name ?? "").toLowerCase().includes(search.toLowerCase());
+      const matchType  = filterType === "all" || b.badge_type === filterType;
+      const matchState = filterState === "all" || (filterState === "active" ? b.is_active : !b.is_active);
+      const matchSL    = filterSL === "all" || b.service_line_name === filterSL;
+      return matchSearch && matchType && matchState && matchSL;
+    });
+  }, [badges, search, filterType, filterState, filterSL]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset página ao mudar filtros
+  useEffect(() => { setPage(1); }, [search, filterType, filterState, filterSL]);
+
+  const openCreate = () => { setEditBadge(null); setForm(EMPTY_FORM); setFormError(null); setShowModal(true); };
+  const openEdit   = (b: BadgeRow) => {
     setEditBadge(b);
-    setForm({ level_id: "", code: b.code, name: b.name, description: b.description ?? "", badge_type: b.badge_type, points: String(b.points), has_expiration: b.has_expiration, valid_days: b.valid_days ? String(b.valid_days) : "" });
+    setForm({ level_id: "", code: b.code, name: b.name, description: b.description ?? "",
+      badge_type: b.badge_type, points: String(b.points), has_expiration: b.has_expiration,
+      valid_days: b.valid_days ? String(b.valid_days) : "" });
     setFormError(null);
     setShowModal(true);
   };
@@ -57,8 +89,7 @@ export default function AdminBadgesPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.code) { setFormError("Nome e código são obrigatórios."); return; }
-    setSaving(true);
-    setFormError(null);
+    setSaving(true); setFormError(null);
     try {
       if (editBadge) {
         await api.patch(`/admin/badges/${editBadge.id}`, {
@@ -75,13 +106,12 @@ export default function AdminBadgesPage() {
           valid_days: form.has_expiration && form.valid_days ? Number(form.valid_days) : undefined,
         });
       }
-      setShowModal(false);
-      fetchData();
+      setShowModal(false); fetchData();
     } catch { setFormError("Erro ao guardar badge."); }
     finally { setSaving(false); }
   };
 
-  const handleToggleActive = async (b: BadgeRow) => {
+  const handleToggle = async (b: BadgeRow) => {
     try {
       await api.patch(`/admin/badges/${b.id}`, { is_active: !b.is_active });
       setBadges((prev) => prev.map((x) => x.id === b.id ? { ...x, is_active: !b.is_active } : x));
@@ -90,20 +120,22 @@ export default function AdminBadgesPage() {
 
   return (
     <AppLayout>
-      <div className="max-w-7xl mx-auto space-y-6">
-        <motion.div {...fadeIn} transition={{ delay: 0.05 }}>
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-                <Award className="h-6 w-6 text-accent" /> Gestão de Badges
-              </h1>
-              <p className="text-muted-foreground mt-1 text-sm">Criar e configurar badges, pontos e expiração</p>
-            </div>
-            <Button onClick={openCreate} className="gap-2">
-              <PlusCircle className="h-4 w-4" /> Novo Badge
-            </Button>
+      <div className="max-w-7xl mx-auto space-y-5">
+
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+              <Award className="h-6 w-6 text-accent" /> Gestão de Badges
+            </h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              {badges.length} badges no total · {badges.filter((b) => b.is_active).length} ativos
+            </p>
           </div>
-        </motion.div>
+          <Button onClick={openCreate} className="gap-2">
+            <PlusCircle className="h-4 w-4" /> Novo Badge
+          </Button>
+        </div>
 
         {/* Modal */}
         {showModal && (
@@ -156,8 +188,7 @@ export default function AdminBadgesPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <input type="checkbox" id="exp" checked={form.has_expiration}
-                    onChange={(e) => setForm((p) => ({ ...p, has_expiration: e.target.checked }))}
-                    className="h-4 w-4 rounded" />
+                    onChange={(e) => setForm((p) => ({ ...p, has_expiration: e.target.checked }))} className="h-4 w-4 rounded" />
                   <label htmlFor="exp" className="text-sm text-foreground">Badge tem data de expiração</label>
                 </div>
                 {form.has_expiration && (
@@ -185,66 +216,178 @@ export default function AdminBadgesPage() {
           </div>
         )}
 
+        {/* Filtros */}
+        <Card className="border border-border shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-wrap gap-3 items-center">
+              <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+
+              {/* Pesquisa */}
+              <div className="relative flex-1 min-w-[180px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input type="text" placeholder="Pesquisar nome, código, área..." value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+
+              {/* Tipo */}
+              <select value={filterType} onChange={(e) => setFilterType(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <option value="all">Todos os tipos</option>
+                <option value="level">Nível</option>
+                <option value="special">Conquista</option>
+                <option value="premium">Premium</option>
+              </select>
+
+              {/* Estado */}
+              <select value={filterState} onChange={(e) => setFilterState(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <option value="all">Todos os estados</option>
+                <option value="active">Ativos</option>
+                <option value="inactive">Inativos</option>
+              </select>
+
+              {/* Service Line */}
+              {servicelines.length > 0 && (
+                <select value={filterSL} onChange={(e) => setFilterSL(e.target.value)}
+                  className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="all">Todas as Service Lines</option>
+                  {servicelines.map((sl) => <option key={sl} value={sl!}>{sl}</option>)}
+                </select>
+              )}
+
+              {/* Limpar filtros */}
+              {(search || filterType !== "all" || filterState !== "all" || filterSL !== "all") && (
+                <Button size="sm" variant="ghost" className="text-xs"
+                  onClick={() => { setSearch(""); setFilterType("all"); setFilterState("all"); setFilterSL("all"); }}>
+                  Limpar
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Tabela */}
-        <motion.div {...fadeIn} transition={{ delay: 0.1 }}>
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className="border border-border shadow-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">{loading ? "A carregar..." : `${badges.length} badge${badges.length !== 1 ? "s" : ""}`}</CardTitle>
+              <CardTitle className="text-base">
+                {loading ? "A carregar..." : (
+                  <>
+                    {filtered.length} badge{filtered.length !== 1 ? "s" : ""}
+                    {filtered.length !== badges.length && (
+                      <span className="text-muted-foreground font-normal"> (de {badges.length})</span>
+                    )}
+                  </>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {loading ? (
                 <div className="p-8 text-center"><RefreshCw className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/30">
-                        {["Badge", "Nível", "Tipo", "Pontos", "Expiração", "Estado", "Ações"].map((h) => (
-                          <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {badges.map((b, i) => (
-                        <motion.tr key={b.id} {...fadeIn} transition={{ delay: 0.03 * i }} className="hover:bg-muted/20 transition-colors">
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-foreground">{b.name}</div>
-                            <div className="text-xs text-muted-foreground">{b.code}</div>
-                          </td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground">
-                            <div>{b.level_code} — {b.level_name}</div>
-                            <div>{b.area_name}</div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
-                              {TYPE_LABELS[b.badge_type] ?? b.badge_type}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-sm font-bold text-yellow-600">{b.points} pts</td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground">
-                            {b.has_expiration ? `${b.valid_days} dias` : "Permanente"}
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${b.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                              {b.is_active ? "Ativo" : "Inativo"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
-                              <Button size="sm" variant="ghost" onClick={() => openEdit(b)} className="gap-1 text-xs">
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => handleToggleActive(b)}
-                                className={`gap-1 text-xs ${b.is_active ? "text-red-600 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}>
-                                {b.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                              </Button>
-                            </div>
-                          </td>
-                        </motion.tr>
-                      ))}
-                    </tbody>
-                  </table>
+              ) : paginated.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <Award className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">Nenhum badge encontrado para os filtros selecionados.</p>
                 </div>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-border bg-muted/30">
+                          {["Badge", "Nível / Área", "Tipo", "Pontos", "Expiração", "Estado", "Ações"].map((h) => (
+                            <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {paginated.map((b) => (
+                          <tr key={b.id} className="hover:bg-muted/20 transition-colors">
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-foreground">{b.name}</div>
+                              <div className="text-xs text-muted-foreground font-mono">{b.code}</div>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-muted-foreground">
+                              <div className="font-medium text-foreground/80">{b.level_code} — {b.level_name}</div>
+                              <div>{b.area_name}</div>
+                              {b.service_line_name && <div className="text-muted-foreground/60">{b.service_line_name}</div>}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                                {TYPE_LABELS[b.badge_type] ?? b.badge_type}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm font-bold text-yellow-600">{b.points} pts</td>
+                            <td className="px-4 py-3 text-xs text-muted-foreground">
+                              {b.has_expiration ? `${b.valid_days} dias` : "Permanente"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${b.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                {b.is_active ? "Ativo" : "Inativo"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => openEdit(b)} className="h-8 w-8 p-0">
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => handleToggle(b)} className={`h-8 w-8 p-0 ${b.is_active ? "text-red-500 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}>
+                                  {b.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Paginação */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                      <span className="text-xs text-muted-foreground">
+                        Página {page} de {totalPages} · {filtered.length} resultados
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0"
+                          disabled={page === 1} onClick={() => setPage(1)}>
+                          «
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0"
+                          disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        {/* Números de página */}
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                          .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                            if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+                            acc.push(p);
+                            return acc;
+                          }, [])
+                          .map((p, i) =>
+                            p === "..." ? (
+                              <span key={`ellipsis-${i}`} className="px-2 text-xs text-muted-foreground">…</span>
+                            ) : (
+                              <Button key={p} size="sm" variant={page === p ? "default" : "outline"} className="h-8 w-8 p-0 text-xs"
+                                onClick={() => setPage(p as number)}>
+                                {p}
+                              </Button>
+                            )
+                          )}
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0"
+                          disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-8 w-8 p-0"
+                          disabled={page === totalPages} onClick={() => setPage(totalPages)}>
+                          »
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

@@ -1,4 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { UPDATABLE_STRUCTURE_ENTITIES, type StructureEntity } from '../common/constants';
 import { DatabaseService } from '../common/database/database.service';
 
 @Injectable()
@@ -192,6 +193,23 @@ export class AdminService {
     return { ok: true };
   }
 
+  async deleteNotice(id: number) {
+    await this.db.query(`DELETE FROM info_notices WHERE id = $1`, [id]);
+    return { ok: true };
+  }
+
+  async toggleEntity(entity: StructureEntity, id: number, active: boolean) {
+    // Validação explícita contra lista de entidades permitidas (evita SQL injection)
+    if (!UPDATABLE_STRUCTURE_ENTITIES.includes(entity)) {
+      throw new BadRequestException(`Entidade inválida: ${entity}`);
+    }
+    await this.db.query(
+      `UPDATE ${entity} SET is_active = $1 WHERE id = $2`,
+      [active, id],
+    );
+    return { ok: true };
+  }
+
   async createLearningPath(data: { code: string; name: string; description?: string }) {
     const res = await this.db.query(
       `INSERT INTO learning_paths (code, name, description, is_active) VALUES ($1, $2, $3, TRUE) RETURNING id`,
@@ -222,6 +240,52 @@ export class AdminService {
       [data.areaId, data.code, data.name, data.rankOrder, data.description ?? null],
     );
     return { id: res.rows[0].id };
+  }
+
+  async listSlas() {
+    const res = await this.db.query(
+      `SELECT sp.id, sp.team_type, sp.limit_hours, sp.warning_at_percent, sp.is_active, sp.created_at,
+              u.full_name AS created_by_name
+       FROM sla_policies sp
+       LEFT JOIN users u ON u.id = sp.created_by_user_id
+       ORDER BY sp.team_type`,
+    );
+    return res.rows;
+  }
+
+  async createSla(data: { createdBy: number; teamType: string; limitHours: number; warningAtPercent: number }) {
+    const res = await this.db.query(
+      `INSERT INTO sla_policies (created_by_user_id, team_type, limit_hours, warning_at_percent, is_active)
+       VALUES ($1, $2, $3, $4, TRUE) RETURNING id`,
+      [data.createdBy, data.teamType, data.limitHours, data.warningAtPercent],
+    );
+    return { id: res.rows[0].id };
+  }
+
+  async toggleSla(id: number, active: boolean) {
+    await this.db.query(`UPDATE sla_policies SET is_active = $1 WHERE id = $2`, [active, id]);
+    return { ok: true };
+  }
+
+  async getIntegrations() {
+    const res = await this.db.query(`SELECT id, provider, config, is_active FROM integration_configs ORDER BY provider`);
+    return res.rows;
+  }
+
+  async saveIntegration(provider: string, webhookUrl: string, active: boolean) {
+    const existing = await this.db.query(`SELECT id FROM integration_configs WHERE provider = $1`, [provider]);
+    if (existing.rows[0]) {
+      await this.db.query(
+        `UPDATE integration_configs SET config = $1, is_active = $2 WHERE provider = $3`,
+        [JSON.stringify({ webhook_url: webhookUrl }), active, provider],
+      );
+    } else {
+      await this.db.query(
+        `INSERT INTO integration_configs (provider, config, is_active) VALUES ($1, $2, $3)`,
+        [provider, JSON.stringify({ webhook_url: webhookUrl }), active],
+      );
+    }
+    return { ok: true };
   }
 
   async listRgpdPolicies() {

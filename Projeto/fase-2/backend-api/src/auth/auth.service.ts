@@ -10,6 +10,7 @@ type UserProfile = {
   area: string | null;
   service_line: string | null;
   must_change_password?: boolean;
+  last_login_at?: string | null;
 };
 
 type LoginResult = {
@@ -24,8 +25,8 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<LoginResult> {
     // Validate credentials with pgcrypto: crypt() compares against the stored hash
-    const userRes = await this.db.query<{ id: number; full_name: string; email: string; must_change_password: boolean }>(
-      `SELECT id, full_name, email, must_change_password
+    const userRes = await this.db.query<{ id: number; full_name: string; email: string; must_change_password: boolean; last_login_at: string | null }>(
+      `SELECT id, full_name, email, must_change_password, last_login_at
        FROM users
        WHERE email = $1
          AND password_hash = crypt($2, password_hash)
@@ -98,6 +99,7 @@ export class AuthService {
         area: profile?.area ?? null,
         service_line: profile?.service_line ?? null,
         must_change_password: user.must_change_password ?? false,
+        last_login_at: user.last_login_at ?? null,
       },
     };
   }

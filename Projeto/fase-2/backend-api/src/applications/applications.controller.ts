@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Headers, Param, ParseIntPipe, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Param, ParseIntPipe, Post } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
+import { getUserIdFromHeader } from '../common/auth/auth.helper';
 
 type CreateApplicationBody = {
   badgeId: number;
@@ -30,10 +31,7 @@ export class ApplicationsController {
 
   @Get('mine')
   async mine(@Headers('x-user-id') userIdHeader: string) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
     return this.applicationsService.mine(userId);
   }
 
@@ -52,10 +50,7 @@ export class ApplicationsController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: CreateApplicationBody,
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
 
     return this.applicationsService.create(userId, body.badgeId);
   }
@@ -66,10 +61,7 @@ export class ApplicationsController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: AddEvidenceBody,
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
 
     return this.applicationsService.addEvidence(id, userId, body);
   }
@@ -79,10 +71,7 @@ export class ApplicationsController {
     @Param('id', ParseIntPipe) id: number,
     @Headers('x-user-id') userIdHeader: string,
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
 
     return this.applicationsService.submit(id, userId);
   }
@@ -93,10 +82,7 @@ export class ApplicationsController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: ReviewBody,
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
 
     return this.applicationsService.approve(id, userId, body.comment);
   }
@@ -107,10 +93,7 @@ export class ApplicationsController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: Required<Pick<ReviewBody, 'comment'>>,
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
 
     return this.applicationsService.reject(id, userId, body.comment);
   }
@@ -121,10 +104,7 @@ export class ApplicationsController {
     @Headers('x-user-id') userIdHeader: string,
     @Body() body: Required<Pick<ReviewBody, 'comment'>>,
   ) {
-    const userId = Number(userIdHeader);
-    if (!Number.isFinite(userId) || userId <= 0) {
-      throw new UnauthorizedException('x-user-id header invalido');
-    }
+    const userId = getUserIdFromHeader(userIdHeader);
 
     return this.applicationsService.sendBack(id, userId, body.comment);
   }

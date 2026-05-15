@@ -27,6 +27,9 @@ export default function AssinaturaPage() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [maxBadges, setMaxBadges] = useState(3);
+  const [customTitle, setCustomTitle] = useState("");
+  const [showPoints, setShowPoints] = useState(true);
+  const [layout, setLayout] = useState<"horizontal" | "vertical">("horizontal");
 
   useEffect(() => {
     api.get("/me/badges")
@@ -38,19 +41,16 @@ export default function AssinaturaPage() {
   const selectedBadges = badges.slice(0, maxBadges);
 
   const generateHtml = () => {
-    const badgeRows = selectedBadges.map((b) => {
+    const title = customTitle || "🏅 Badges Certificados";
+    const galleryUrl = `${origin}/galeria/${user?.id}`;
+
+    const badgeItems = selectedBadges.map((b) => {
       const verifyUrl = b.public_token ? `${origin}/verify/${b.public_token}` : "#";
-      return `
-        <tr>
-          <td style="padding:2px 8px 2px 0">
-            <a href="${verifyUrl}" target="_blank" style="text-decoration:none">
-              <span style="display:inline-block;background:#6366f1;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;font-family:Arial,sans-serif">
-                ${b.level_code ?? "?"} · ${b.badge_name}
-              </span>
-            </a>
-          </td>
-        </tr>`;
-    }).join("");
+      const label = `${b.level_code ?? "?"} · ${b.badge_name}${showPoints && b.points > 0 ? ` (${b.points}pts)` : ""}`;
+      return `<a href="${verifyUrl}" target="_blank" style="text-decoration:none;display:inline-block;margin:${layout === "horizontal" ? "0 4px 4px 0" : "0 0 4px 0"}">
+        <span style="background:#6366f1;color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;font-family:Arial,sans-serif">${label}</span>
+      </a>`;
+    }).join(layout === "horizontal" ? "" : "<br>");
 
     return `<!-- Softinsa Badges Signature -->
 <table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif">
@@ -62,21 +62,11 @@ export default function AssinaturaPage() {
   </tr>
   <tr>
     <td>
-      <table cellpadding="0" cellspacing="0" border="0">
-        <tr>
-          <td style="padding-bottom:4px">
-            <span style="font-size:11px;color:#64748b;font-family:Arial,sans-serif">🏅 Badges Certificados:</span>
-          </td>
-        </tr>
-        ${badgeRows}
-        <tr>
-          <td style="padding-top:4px">
-            <a href="${origin}/galeria/${user?.id}" target="_blank" style="font-size:10px;color:#6366f1">
-              Ver galeria completa
-            </a>
-          </td>
-        </tr>
-      </table>
+      <p style="font-size:11px;color:#64748b;margin:0 0 6px 0;font-family:Arial,sans-serif">${title}</p>
+      <div>${badgeItems}</div>
+      <div style="margin-top:6px">
+        <a href="${galleryUrl}" target="_blank" style="font-size:10px;color:#6366f1">Ver galeria completa →</a>
+      </div>
     </td>
   </tr>
 </table>`;
@@ -126,20 +116,35 @@ export default function AssinaturaPage() {
                   <CardTitle className="text-base">Configuração</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1.5">Nº máximo de badges</label>
+                      <select value={maxBadges} onChange={(e) => setMaxBadges(Number(e.target.value))}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n} badge{n !== 1 ? "s" : ""}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-foreground block mb-1.5">Layout dos badges</label>
+                      <select value={layout} onChange={(e) => setLayout(e.target.value as any)}
+                        className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30">
+                        <option value="horizontal">Horizontal (linha)</option>
+                        <option value="vertical">Vertical (coluna)</option>
+                      </select>
+                    </div>
+                  </div>
                   <div>
                     <label className="text-sm font-medium text-foreground block mb-1.5">
-                      Número máximo de badges na assinatura
+                      Título personalizado <span className="text-muted-foreground font-normal">(opcional)</span>
                     </label>
-                    <select
-                      value={maxBadges}
-                      onChange={(e) => setMaxBadges(Number(e.target.value))}
-                      className="bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    >
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <option key={n} value={n}>{n} badge{n !== 1 ? "s" : ""}</option>
-                      ))}
-                    </select>
+                    <input type="text" value={customTitle} onChange={(e) => setCustomTitle(e.target.value)}
+                      placeholder="🏅 Badges Certificados"
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
                   </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={showPoints} onChange={(e) => setShowPoints(e.target.checked)} className="h-4 w-4 rounded" />
+                    <span className="text-sm text-foreground">Mostrar pontos em cada badge</span>
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     {selectedBadges.map((b) => (
                       <span key={b.id} className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">

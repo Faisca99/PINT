@@ -1,17 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
-  Send,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  ChevronRight,
-  RefreshCw,
-  AlertCircle,
-  Inbox,
-  PlusCircle,
+  Send, Clock, CheckCircle2, XCircle, ChevronRight, ChevronLeft,
+  RefreshCw, AlertCircle, Inbox, PlusCircle, Search, Filter,
 } from "lucide-react";
 import Link from "next/link";
 import AppLayout from "@/components/AppLayout";
@@ -62,6 +55,10 @@ export default function MinhasCandidaturasPage() {
   const [applications, setApplications] = useState<MyApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const fetchApplications = async () => {
     setLoading(true);
@@ -76,9 +73,23 @@ export default function MinhasCandidaturasPage() {
     }
   };
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
+  useEffect(() => { fetchApplications(); }, []);
+  useEffect(() => { setPage(1); }, [search, filterStatus]);
+
+  const filtered = useMemo(() => applications.filter((a) => {
+    const matchSearch = !search ||
+      a.badge_name.toLowerCase().includes(search.toLowerCase()) ||
+      (a.area_name ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchStatus = filterStatus === "all" ||
+      (filterStatus === "open" && a.status === "open") ||
+      (filterStatus === "active" && ["submitted","in_validation"].includes(a.status)) ||
+      (filterStatus === "approved" && a.status === "closed" && a.final_result === "approved") ||
+      (filterStatus === "rejected" && a.status === "closed" && a.final_result === "rejected");
+    return matchSearch && matchStatus;
+  }), [applications, search, filterStatus]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const counts = {
     open: applications.filter((a) => a.status === "open").length,
@@ -167,12 +178,45 @@ export default function MinhasCandidaturasPage() {
           </div>
         </motion.div>
 
+        {/* Filtros */}
+        <motion.div {...fadeIn} transition={{ delay: 0.12 }}>
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input type="text" placeholder="Pesquisar badge ou área..." value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+              {[
+                { key: "all",      label: "Todas" },
+                { key: "open",     label: "Em Aberto" },
+                { key: "active",   label: "Em Revisão" },
+                { key: "approved", label: "Aprovadas" },
+                { key: "rejected", label: "Rejeitadas" },
+              ].map((f) => (
+                <button key={f.key} onClick={() => setFilterStatus(f.key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${filterStatus === f.key ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/40"}`}>
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
         {/* Lista */}
         <motion.div {...fadeIn} transition={{ delay: 0.15 }}>
           <Card className="border border-border shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">
-                {applications.length} candidatura{applications.length !== 1 ? "s" : ""}
+                {filtered.length} candidatura{filtered.length !== 1 ? "s" : ""}
+                {filtered.length !== applications.length && (
+                  <span className="text-muted-foreground font-normal text-sm ml-1">(de {applications.length})</span>
+                )}
+                {filtered.length > PAGE_SIZE && (
+                  <span className="text-muted-foreground font-normal text-sm ml-2">· página {page} de {totalPages}</span>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -197,9 +241,15 @@ export default function MinhasCandidaturasPage() {
                     </Button>
                   </Link>
                 </div>
+              ) : filtered.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground">
+                  <Inbox className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                  <p className="text-sm">Nenhuma candidatura para este filtro.</p>
+                </div>
               ) : (
+                <>
                 <div className="divide-y divide-border">
-                  {applications.map((app, i) => {
+                  {paginated.map((app, i) => {
                     const statusCfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.open;
                     const StatusIcon = statusCfg.icon;
 
@@ -278,6 +328,47 @@ export default function MinhasCandidaturasPage() {
                     );
                   })}
                 </div>
+
+                {/* Paginação */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-6 py-3 border-t border-border">
+                    <span className="text-xs text-muted-foreground">
+                      Página {page} de {totalPages} · {filtered.length} resultados
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <button disabled={page === 1} onClick={() => setPage(1)}
+                        className="h-8 w-8 flex items-center justify-center rounded border border-border text-xs text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed">«</button>
+                      <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}
+                        className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed">
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                        .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                          if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+                          acc.push(p);
+                          return acc;
+                        }, [])
+                        .map((p, i) =>
+                          p === "..." ? (
+                            <span key={`e${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                          ) : (
+                            <button key={p} onClick={() => setPage(p as number)}
+                              className={`h-8 w-8 flex items-center justify-center rounded text-xs border transition-colors ${page === p ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                              {p}
+                            </button>
+                          )
+                        )}
+                      <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}
+                        className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed">
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                      <button disabled={page === totalPages} onClick={() => setPage(totalPages)}
+                        className="h-8 w-8 flex items-center justify-center rounded border border-border text-xs text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed">»</button>
+                    </div>
+                  </div>
+                )}
+                </>
               )}
             </CardContent>
           </Card>

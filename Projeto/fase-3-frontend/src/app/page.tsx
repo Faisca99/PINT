@@ -6,6 +6,8 @@ import {
   Award, TrendingUp, Clock, CheckCircle2, ChevronRight,
   Hexagon, Zap, Target, RefreshCw, Send, AlertTriangle, Lightbulb,
 } from "lucide-react";
+import { getGreeting } from "@/lib/greeting";
+import { getLang } from "@/lib/i18n";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +80,7 @@ export default function Dashboard() {
           {/* Header */}
           <motion.div {...fadeIn} transition={{ delay: 0.05 }}>
             <h1 className="text-2xl font-bold text-foreground">
-              Olá, {user.name.split(" ")[0]} 👋
+              {getGreeting(user, user.lastLoginAt)}, {user.name.split(" ")[0]}! 👋
             </h1>
             <p className="text-muted-foreground mt-1">
               Acompanha o teu progresso na jornada técnica

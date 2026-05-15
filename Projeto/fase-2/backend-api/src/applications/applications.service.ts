@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../common/database/database.service';
 import { EmailService } from '../common/email/email.service';
+import { WebhookService } from '../common/webhook/webhook.service';
 
 @Injectable()
 export class ApplicationsService {
   constructor(
     private readonly db: DatabaseService,
     private readonly email: EmailService,
+    private readonly webhook: WebhookService,
   ) {}
 
   private async getApplicationInfo(applicationId: number) {
@@ -76,20 +78,20 @@ export class ApplicationsService {
         `Candidatura #${applicationId} submetida — ${info.badge_name}`,
         this.email.applicationConfirmation(info.applicant_name, info.badge_name, applicationId),
       );
-      // Notificar Talent Managers
+      // Notificar Talent Managers (em paralelo, falhas individuais não bloqueiam)
       const tms = await this.db.query(
         `SELECT u.full_name, u.email FROM users u
          JOIN user_roles ur ON ur.user_id = u.id AND ur.is_active = TRUE
          JOIN roles r ON r.id = ur.role_id
          WHERE r.code = 'talent_manager' AND u.account_status = 'active'`,
       );
-      for (const tm of tms.rows) {
-        await this.email.send(
+      await Promise.all(tms.rows.map((tm) =>
+        this.email.send(
           tm.email,
           `Nova candidatura para validação — ${info.badge_name}`,
           this.email.newApplicationForValidator(tm.full_name, info.applicant_name, info.badge_name),
-        );
-      }
+        ).catch((err) => console.warn(`[Email] Falha ao notificar ${tm.email}:`, err)),
+      ));
     }
     return { ok: true };
   }
@@ -115,7 +117,7 @@ export class ApplicationsService {
     console.log(`[APPROVE] app=${applicationId} status=${currentStatus} reviewer=${reviewerUserId} role=${reviewerRole}`);
 
     // TM só pode agir sobre candidaturas "submitted"
-    if (reviewerRole === 'talent_manager' || currentStatus === 'submitted') {
+    if (reviewerRole === 'talent_manager') {
       if (currentStatus !== 'submitted') {
         throw new Error(`TM não pode agir sobre candidatura em estado: ${currentStatus}`);
       }
@@ -151,7 +153,7 @@ export class ApplicationsService {
     }
 
     // SLL só pode agir sobre candidaturas "in_validation"
-    if (reviewerRole === 'service_line_leader' || currentStatus === 'in_validation') {
+    if (reviewerRole === 'service_line_leader') {
       if (currentStatus !== 'in_validation') {
         throw new Error(`SLL não pode agir sobre candidatura em estado: ${currentStatus}`);
       }
@@ -169,6 +171,10 @@ export class ApplicationsService {
         );
       }
       console.log(`[APPROVE] SLL approved app=${applicationId} → badge awarded`);
+      // Notificar Teams/Slack
+      if (info) {
+        await this.webhook.badgeAwarded(info.applicant_name, info.badge_name);
+      }
       return { userBadgeId: res.rows[0]?.fn_approve_application ?? null };
     }
 
@@ -254,16 +260,19 @@ export class ApplicationsService {
                 json_build_object(
                   'id', ae.id,
                   'requirement_id', ae.requirement_id,
+                  'requirement_code', r.code,
+                  'requirement_title', r.title,
                   'file_name', ae.file_name,
                   'file_url', ae.file_url,
                   'description', ae.description,
                   'uploaded_at', ae.uploaded_at
-                )
+                ) ORDER BY ae.id
               ) FILTER (WHERE ae.id IS NOT NULL) AS evidences
        FROM badge_applications ba
        JOIN users u ON u.id = ba.applicant_user_id
        JOIN badges b ON b.id = ba.badge_id
        LEFT JOIN application_evidences ae ON ae.application_id = ba.id
+       LEFT JOIN requirements r ON r.id = ae.requirement_id
        WHERE ba.id = $1
        GROUP BY ba.id, u.full_name, b.name`,
       [id],

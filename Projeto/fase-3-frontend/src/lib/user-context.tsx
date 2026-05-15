@@ -13,6 +13,8 @@ export interface CurrentUser {
   serviceLine: string | null;
   accessToken: string;
   mustChangePassword?: boolean;
+  lastLoginAt?: string | null;
+  isNewUser?: boolean;
 }
 
 export const ROLE_LABELS: Record<UserRole, string> = {

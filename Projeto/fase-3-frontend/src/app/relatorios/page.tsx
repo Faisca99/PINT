@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useUser } from "@/lib/user-context";
 import { motion } from "framer-motion";
 import {
   BarChart3, RefreshCw, AlertCircle, Download, Filter,
   CheckCircle2, XCircle, Clock, Users, Award, TrendingUp, Layers,
+  ChevronLeft, ChevronRight,
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +61,7 @@ const LEVEL_COLORS: Record<string, string> = {
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
 export default function RelatoriosPage() {
+  const { user } = useUser();
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [kpis, setKpis] = useState<Kpis | null>(null);
@@ -70,6 +73,11 @@ export default function RelatoriosPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  const totalPages = useMemo(() => Math.max(1, Math.ceil(rows.length / PAGE_SIZE)), [rows.length]);
+  const paginated  = useMemo(() => rows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [rows, page]);
 
   const fetchRows = async () => {
     setLoading(true);
@@ -79,6 +87,10 @@ export default function RelatoriosPage() {
       if (filterStatus) params.set("status", filterStatus);
       if (filterFrom) params.set("from", filterFrom);
       if (filterTo) params.set("to", filterTo);
+      // SLL só vê dados da sua service line
+      if (user?.role === "service_line_leader" && user.serviceLine) {
+        params.set("service_line", user.serviceLine);
+      }
       const [rowsRes, summaryRes] = await Promise.all([
         api.get(`/reports/applications?${params}`),
         api.get("/reports/summary"),
@@ -93,6 +105,7 @@ export default function RelatoriosPage() {
   };
 
   useEffect(() => {
+    setPage(1);
     fetchRows();
     Promise.all([
       api.get("/reports/kpis"),
@@ -163,7 +176,14 @@ export default function RelatoriosPage() {
                 <BarChart3 className="h-6 w-6 text-accent" />
                 Relatórios & Estatísticas
               </h1>
-              <p className="text-muted-foreground mt-1 text-sm">KPIs da plataforma de badges</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                KPIs da plataforma de badges
+                {user?.role === "service_line_leader" && user.serviceLine && (
+                  <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                    {user.serviceLine}
+                  </span>
+                )}
+              </p>
             </div>
             <Button onClick={exportExcel} disabled={loading || rows.length === 0} className="gap-2">
               <Download className="h-4 w-4" />
@@ -370,7 +390,7 @@ export default function RelatoriosPage() {
                 <span className="text-xs text-muted-foreground">até</span>
                 <input type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)}
                   className="bg-background border border-border rounded-md px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-                <Button size="sm" onClick={fetchRows} disabled={loading} className="gap-2">
+                <Button size="sm" onClick={() => { setPage(1); fetchRows(); }} disabled={loading} className="gap-2">
                   <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
                   Filtrar
                 </Button>
@@ -389,7 +409,16 @@ export default function RelatoriosPage() {
           <Card className="border border-border shadow-card">
             <CardHeader className="pb-3">
               <CardTitle className="text-base">
-                {loading ? "A carregar..." : `${rows.length} candidatura${rows.length !== 1 ? "s" : ""}`}
+                {loading ? "A carregar..." : (
+                  <>
+                    {rows.length} candidatura{rows.length !== 1 ? "s" : ""}
+                    {rows.length > PAGE_SIZE && (
+                      <span className="text-muted-foreground font-normal text-sm ml-2">
+                        · página {page} de {Math.ceil(rows.length / PAGE_SIZE)}
+                      </span>
+                    )}
+                  </>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -409,51 +438,94 @@ export default function RelatoriosPage() {
                   <p className="text-sm">Nenhum resultado para os filtros selecionados.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/30">
-                        {["Consultor", "Badge", "Nível", "Área", "Estado", "Data"].map((h) => (
-                          <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      {rows.map((row) => {
-                        const isClosed = row.status === "closed";
-                        return (
-                          <tr key={row.id} className="hover:bg-muted/20 transition-colors">
-                            <td className="px-4 py-3">
-                              <div className="font-medium text-foreground">{row.applicant_name}</div>
-                              <div className="text-xs text-muted-foreground">{row.applicant_email}</div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="text-foreground">{row.badge_name}</div>
-                              {row.points > 0 && <div className="text-xs text-yellow-600">+{row.points} pts</div>}
-                            </td>
-                            <td className="px-4 py-3 text-muted-foreground">{row.level_code ?? "—"}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{row.area_name ?? "—"}</td>
-                            <td className="px-4 py-3">
-                              {isClosed ? (
-                                <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${row.final_result === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-                                  {row.final_result === "approved" ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                                  {row.final_result === "approved" ? "Aprovada" : "Rejeitada"}
-                                </span>
-                              ) : (
-                                <span className="text-xs text-muted-foreground">{STATUS_LABELS[row.status]}</span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-xs text-muted-foreground">
-                              {row.submitted_at
-                                ? new Date(row.submitted_at).toLocaleDateString("pt-PT")
-                                : new Date(row.created_at).toLocaleDateString("pt-PT")}
-                            </td>
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border bg-muted/30">
+                            {["Consultor", "Badge", "Nível", "Área", "Estado", "Data"].map((h) => (
+                              <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">{h}</th>
+                            ))}
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {paginated.map((row) => {
+                            const isClosed = row.status === "closed";
+                            return (
+                              <tr key={row.id} className="hover:bg-muted/20 transition-colors">
+                                <td className="px-4 py-3">
+                                  <div className="font-medium text-foreground">{row.applicant_name}</div>
+                                  <div className="text-xs text-muted-foreground">{row.applicant_email}</div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="text-foreground">{row.badge_name}</div>
+                                  {row.points > 0 && <div className="text-xs text-yellow-600">+{row.points} pts</div>}
+                                </td>
+                                <td className="px-4 py-3 text-muted-foreground">{row.level_code ?? "—"}</td>
+                                <td className="px-4 py-3 text-muted-foreground">{row.area_name ?? "—"}</td>
+                                <td className="px-4 py-3">
+                                  {isClosed ? (
+                                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${row.final_result === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                      {row.final_result === "approved" ? <CheckCircle2 className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                                      {row.final_result === "approved" ? "Aprovada" : "Rejeitada"}
+                                    </span>
+                                  ) : (
+                                    <span className="text-xs text-muted-foreground">{STATUS_LABELS[row.status]}</span>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-xs text-muted-foreground">
+                                  {row.submitted_at
+                                    ? new Date(row.submitted_at).toLocaleDateString("pt-PT")
+                                    : new Date(row.created_at).toLocaleDateString("pt-PT")}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Paginação */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                        <span className="text-xs text-muted-foreground">
+                          Página {page} de {totalPages} · {rows.length} resultados
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled={page === 1} onClick={() => setPage(1)}>«</button>
+                          <button className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+                          {Array.from({ length: totalPages }, (_, i) => i + 1)
+                            .filter((p) => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                            .reduce<(number | "...")[]>((acc, p, idx, arr) => {
+                              if (idx > 0 && (p as number) - (arr[idx - 1] as number) > 1) acc.push("...");
+                              acc.push(p);
+                              return acc;
+                            }, [])
+                            .map((p, i) =>
+                              p === "..." ? (
+                                <span key={`e${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                              ) : (
+                                <button key={p}
+                                  onClick={() => setPage(p as number)}
+                                  className={`h-8 w-8 flex items-center justify-center rounded text-xs border transition-colors ${page === p ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:bg-muted"}`}>
+                                  {p}
+                                </button>
+                              )
+                            )}
+                          <button className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                          <button className="h-8 w-8 flex items-center justify-center rounded border border-border text-muted-foreground hover:bg-muted disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled={page === totalPages} onClick={() => setPage(totalPages)}>»</button>
+                        </div>
+                      </div>
+                    )}
+                  </>
               )}
             </CardContent>
           </Card>

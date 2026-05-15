@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Layers, RefreshCw, ChevronDown, ChevronRight, PlusCircle, X, AlertCircle, Plus } from "lucide-react";
+import { Layers, RefreshCw, ChevronDown, ChevronRight, PlusCircle, X, AlertCircle, Plus, ToggleLeft, ToggleRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,13 @@ export default function AdminEstruturaPage() {
 
   const reqsForLevel = (levelId: number) =>
     structure?.requirements.filter((r) => r.level_id === levelId) ?? [];
+
+  const handleToggle = async (entity: string, id: number, currentActive: boolean) => {
+    try {
+      await api.patch(`/admin/structure/${entity}/${id}/status`, { active: !currentActive });
+      fetchStructure();
+    } catch { alert("Erro ao alterar estado."); }
+  };
 
   const levelsForArea = (areaId: number) =>
     structure?.levels.filter((l) => l.area_id === areaId) ?? [];
@@ -296,7 +303,14 @@ export default function AdminEstruturaPage() {
                 >
                   {expandedLp[lp.id] ? <ChevronDown className="h-4 w-4 text-accent shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
                   <span className="font-semibold text-foreground">📚 {lp.name}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">{slsForLp(lp.id).length} service lines</span>
+                  <span className="text-xs text-muted-foreground">{slsForLp(lp.id).length} service lines</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleToggle('learning_paths', lp.id, lp.is_active); }}
+                    className={`ml-auto shrink-0 p-1 rounded transition-colors ${lp.is_active ? "text-red-400 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`}
+                    title={lp.is_active ? "Desativar" : "Ativar"}
+                  >
+                    {lp.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                  </button>
                 </button>
 
                 {expandedLp[lp.id] && (
@@ -309,7 +323,12 @@ export default function AdminEstruturaPage() {
                         >
                           {expandedSl[sl.id] ? <ChevronDown className="h-3.5 w-3.5 text-accent" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />}
                           <span className="text-sm font-medium text-foreground">🏢 {sl.name}</span>
-                          <span className="text-xs text-muted-foreground ml-auto">{areasForSl(sl.id).length} áreas</span>
+                          <span className="text-xs text-muted-foreground">{areasForSl(sl.id).length} áreas</span>
+                          <button onClick={(e) => { e.stopPropagation(); handleToggle('service_lines', sl.id, sl.is_active); }}
+                            className={`ml-auto shrink-0 p-1 rounded transition-colors ${sl.is_active ? "text-red-400 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`}
+                            title={sl.is_active ? "Desativar" : "Ativar"}>
+                            {sl.is_active ? <ToggleRight className="h-3.5 w-3.5" /> : <ToggleLeft className="h-3.5 w-3.5" />}
+                          </button>
                         </button>
 
                         {expandedSl[sl.id] && (
@@ -322,7 +341,12 @@ export default function AdminEstruturaPage() {
                                 >
                                   {expandedArea[area.id] ? <ChevronDown className="h-3 w-3 text-accent" /> : <ChevronRight className="h-3 w-3 text-muted-foreground" />}
                                   <span className="text-sm text-foreground">📁 {area.name}</span>
-                                  <span className="text-xs text-muted-foreground ml-auto">{levelsForArea(area.id).length} níveis</span>
+                                  <span className="text-xs text-muted-foreground">{levelsForArea(area.id).length} níveis</span>
+                                  <button onClick={(e) => { e.stopPropagation(); handleToggle('areas', area.id, area.is_active); }}
+                                    className={`ml-auto shrink-0 p-1 rounded transition-colors ${area.is_active ? "text-red-400 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`}
+                                    title={area.is_active ? "Desativar" : "Ativar"}>
+                                    {area.is_active ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />}
+                                  </button>
                                 </button>
 
                                 {expandedArea[area.id] && (
@@ -337,7 +361,12 @@ export default function AdminEstruturaPage() {
                                           <span className="text-xs font-medium text-foreground">
                                             🏅 Nível {level.code} — {level.name}
                                           </span>
-                                          <span className="text-xs text-muted-foreground ml-auto">{reqsForLevel(level.id).length} requisitos</span>
+                                          <span className="text-xs text-muted-foreground">{reqsForLevel(level.id).length} requisitos</span>
+                                          <button onClick={(e) => { e.stopPropagation(); handleToggle('levels', level.id, level.is_active); }}
+                                            className={`ml-auto shrink-0 p-1 rounded transition-colors ${level.is_active ? "text-red-400 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`}
+                                            title={level.is_active ? "Desativar" : "Ativar"}>
+                                            {level.is_active ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />}
+                                          </button>
                                         </button>
 
                                         {expandedLevel[level.id] && (
@@ -345,12 +374,17 @@ export default function AdminEstruturaPage() {
                                             {reqsForLevel(level.id).map((req: any) => (
                                               <div key={req.id} className="flex items-start gap-2 px-3 py-1.5 text-xs text-muted-foreground">
                                                 <span className="text-accent font-bold shrink-0">{req.code}</span>
-                                                <div>
+                                                <div className="flex-1 min-w-0">
                                                   <div className="font-medium text-foreground">{req.title}</div>
                                                   {req.evidence_instructions && (
                                                     <div className="text-muted-foreground/70 mt-0.5 italic">{req.evidence_instructions}</div>
                                                   )}
                                                 </div>
+                                                <button onClick={() => handleToggle('requirements', req.id, req.is_active)}
+                                                  className={`shrink-0 p-0.5 rounded transition-colors ${req.is_active ? "text-red-400 hover:bg-red-50" : "text-green-500 hover:bg-green-50"}`}
+                                                  title={req.is_active ? "Desativar" : "Ativar"}>
+                                                  {req.is_active ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />}
+                                                </button>
                                               </div>
                                             ))}
                                             {reqsForLevel(level.id).length === 0 && (
