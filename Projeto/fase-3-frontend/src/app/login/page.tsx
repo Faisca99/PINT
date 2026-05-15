@@ -64,7 +64,7 @@ export default function LoginPage() {
           consultant:           "/",
           talent_manager:       "/dashboard-tm",
           service_line_leader:  "/dashboard-sl",
-          admin:                "/admin/utilizadores",
+          admin:                "/admin",
         };
         router.push(dashboards[user.role] ?? "/");
       }

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { getGreeting } from "@/lib/greeting";
 import { getLang } from "@/lib/i18n";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const LEVEL_CONFIG: Record<string, { label: string; color: string }> = {
 
 export default function Dashboard() {
   const { user } = useUser();
+  const router = useRouter();
 
   const [applications, setApplications] = useState<any[]>([]);
   const [myBadges, setMyBadges] = useState<any[]>([]);
@@ -35,6 +37,14 @@ export default function Dashboard() {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expiringBadges, setExpiringBadges] = useState<any[]>([]);
+
+  // Redirecionar roles que têm dashboard próprio — todos os hooks já declarados acima
+  useEffect(() => {
+    if (!user) return;
+    if (user.role === "admin") router.replace("/admin");
+    else if (user.role === "talent_manager") router.replace("/dashboard-tm");
+    else if (user.role === "service_line_leader") router.replace("/dashboard-sl");
+  }, [user?.role, router]);
 
   useEffect(() => {
     if (!user) return;

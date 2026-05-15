@@ -223,16 +223,16 @@ export class ApplicationsService {
 
     await this.db.query(
       `INSERT INTO application_history (application_id, actor_user_id, from_status, to_status, event_type, comment, occurred_at)
-       VALUES ($1, $2, $3, 'open', 'send_back', $4, NOW())`,
+       VALUES ($1, $2, $3::application_status_t, 'open'::application_status_t, 'send_back', $4, NOW())`,
       [applicationId, reviewerUserId, current.status, comment],
     );
 
     await this.db.query(
       `INSERT INTO notifications (user_id, type, title, message, payload, sent_at)
-       SELECT applicant_user_id, 'application_send_back',
+       SELECT applicant_user_id, 'application_send_back'::notification_type_t,
               'Candidatura devolvida',
               'A tua candidatura foi devolvida para correção. Motivo: ' || $2,
-              jsonb_build_object('application_id', $1),
+              jsonb_build_object('application_id', $1::bigint),
               NOW()
        FROM badge_applications WHERE id = $1`,
       [applicationId, comment],

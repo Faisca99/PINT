@@ -104,7 +104,7 @@ const NAV_CONFIG: Record<UserRole, { label: string; items: { title: string; url:
     {
       label: "Gestão",
       items: [
-        { title: "Dashboard", url: "/", icon: LayoutDashboard },
+        { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
         { title: "Utilizadores", url: "/admin/utilizadores", icon: Users },
         { title: "Badges", url: "/admin/badges", icon: Award },
         { title: "Estrutura LP", url: "/admin/estrutura", icon: ShieldCheck },
@@ -147,7 +147,11 @@ export function AppSidebar() {
         : item.title,
     })),
   }));
-  const isActive = (path: string) => pathname === path || (path !== "/" && pathname.startsWith(path));
+  // Páginas que só devem ficar activas com exact match (não com startsWith)
+  const EXACT_MATCH_PATHS = ["/", "/admin"];
+  const isActive = (path: string) =>
+    pathname === path ||
+    (!EXACT_MATCH_PATHS.includes(path) && pathname.startsWith(path));
 
   return (
     <Sidebar

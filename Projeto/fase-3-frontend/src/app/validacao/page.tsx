@@ -63,35 +63,42 @@ export default function ValidacaoInboxPage() {
   useEffect(() => { fetchApplications(); }, []);
   useEffect(() => { setPage(1); }, [filterStatus, search]);
 
-  if (!user) return null;
-
-  // Filtrar por role + status + SL + pesquisa
-  const filtered = useMemo(() => applications.filter((app) => {
-    if (user.role === "talent_manager") {
-      if (!["submitted", "in_validation", "closed"].includes(app.status)) return false;
-    } else if (user.role === "service_line_leader") {
-      if (!["in_validation", "closed"].includes(app.status)) return false;
-      if (user.serviceLine && app.service_line_name && app.service_line_name !== user.serviceLine) return false;
-    }
-    if (filterStatus !== "all" && app.status !== filterStatus) return false;
-    if (search) {
-      const q = search.toLowerCase();
-      return app.applicant_name.toLowerCase().includes(q) || app.badge_name.toLowerCase().includes(q);
-    }
-    return true;
-  }), [applications, user, filterStatus, search]);
+  // TODOS os hooks ANTES de qualquer return condicional
+  const filtered = useMemo(() => {
+    if (!user) return [];
+    return applications.filter((app) => {
+      if (user.role === "talent_manager") {
+        if (!["submitted", "in_validation", "closed"].includes(app.status)) return false;
+      } else if (user.role === "service_line_leader") {
+        if (!["in_validation", "closed"].includes(app.status)) return false;
+        if (user.serviceLine && app.service_line_name && app.service_line_name !== user.serviceLine) return false;
+      }
+      if (filterStatus !== "all" && app.status !== filterStatus) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        return app.applicant_name.toLowerCase().includes(q) || app.badge_name.toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }, [applications, user, filterStatus, search]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const pendingCount = useMemo(() => applications.filter((a) => {
-    if (user.role === "talent_manager") return a.status === "submitted";
-    if (user.role === "service_line_leader") {
-      const matchSL = !user.serviceLine || !a.service_line_name || a.service_line_name === user.serviceLine;
-      return a.status === "in_validation" && matchSL;
-    }
-    return false;
-  }).length, [applications, user]);
+  const pendingCount = useMemo(() => {
+    if (!user) return 0;
+      return applications.filter((a) => {
+        if (user.role === "talent_manager") return a.status === "submitted";
+        if (user.role === "service_line_leader") {
+          const matchSL = !user.serviceLine || !a.service_line_name || a.service_line_name === user.serviceLine;
+          return a.status === "in_validation" && matchSL;
+        }
+        return false;
+      }).length;
+  }, [applications, user]);
+
+  // AGORA é seguro fazer o early return — todos os hooks já foram chamados
+  if (!user) return null;
 
   const statusFilters = user.role === "talent_manager"
     ? [{ key: "all", label: "Todas" }, { key: "submitted", label: "Submetidas" }, { key: "in_validation", label: "Em Validação" }, { key: "closed", label: "Fechadas" }]

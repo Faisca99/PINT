@@ -9,16 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 
+interface UserRow { id: number; full_name: string; role: string; area_name: string | null; service_line_name: string | null; badge_count: number; total_points: number; }
+interface AppRow  { id: number; status: string; final_result: string | null; applicant_name: string; badge_name: string; submitted_at: string | null; created_at: string; }
+interface TmSummary { pending_tm: number; pending_sll: number; approved: number; rejected: number; total: number; }
+
 const fadeIn = { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 } };
 
 export default function DashboardTMPage() {
-  interface UserRow { id: number; full_name: string; role: string; area_name: string | null; service_line_name: string | null; badge_count: number; total_points: number; }
-  interface AppRow  { id: number; status: string; final_result: string | null; applicant_name: string; badge_name: string; submitted_at: string | null; created_at: string; }
-  interface Summary { pending_tm: number; pending_sll: number; approved: number; rejected: number; total: number; }
-
   const [users, setUsers] = useState<UserRow[]>([]);
   const [apps, setApps]   = useState<AppRow[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [summary, setSummary] = useState<TmSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
