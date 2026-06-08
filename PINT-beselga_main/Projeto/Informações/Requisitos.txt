@@ -1,0 +1,312 @@
+vou te mandar uma checklist e vais confirmando se atualmente temos isto ok?
+
+
+
+LearningPaths
+
+- Jornada Técnica à Isto é um learning Path. neste projeto vamos fazer apenas este learning path
+
+o Service lines
+
+Hybrid Cloud -
+
+LowCode (Outsystems) à Low Code é uma área da service line “Hybrid
+
+Cloud” do leanrnig path “Jornada Técnica”.
+
+o A - Nível Júnior (A1; A2; A3 –> Requisitos) - (1 Badge quando cumpre
+
+os 3 requisitos de A1..A3)
+
+o B - Nível Intermédio (B1; B2; B3) - Requisitos -(1 Badge)
+
+o C - Nível Sénior (C1; C2; C3) - Requisitos -(1 Badge)
+
+o D - Nível Especialista (D1; D2; D3) - Requisitos -(1 Badge)
+
+o E - Nível Líder de conhecimento (E1; E2; E3) - Requisitos -(1 Badge)
+
+Application Operations.
+
+DevSecOps & IT Automation – DevOps –> à DevSecOps & IT Automation –
+
+DevOps é uma área da service line “Application Operations” do leanrnig path
+
+“Jornada Técnica”.
+
+o A - Nível Júnior (A1; A2; A3 –> Requisitos) - (1 Badge quando cumpre
+
+os 3 de A1..A3)
+
+o B - Nível Intermédio B1; B2; B3) - Requisitos -(1 Badge)
+
+o C - Nível Sénior C1; C2; C3) - Requisitos -(1 Badge)
+
+o D - Nível Especialista (D1; D2; D3) – Requisitos -(1 Badge)
+
+o E - Nível Líder de conhecimento (E1; E2; E3) - Requisitos -(1 Badge)
+
+Sourcing & Talent Management
+
+Sourcing & Talent Management - Talent Managem.
+
+o A - Nível Júnior (A1; A2; A3) - Requisitos -(1 Badge)
+
+o B - Nível Intermédio (B1; B2; B3) - Requisitos -(1 Badge)
+
+o C - Nível Sénior (C1; C2; C3) - Requisitos -(1 Badge)
+
+o D - Nível Especialista (D1; D2; D3) - Requisitos -(1 Badge)
+
+o E - Nível Líder de conhecimento (E1; E2; E3) – Requisitos -(1 Badge)
+
+
+
+---------
+
+Resumindo: um learning Path pode conter várias Service Line, que podem conter várias áreas,
+
+que, por sua vez, contêm vários níveis. Cada nível pode conter vários requisitos (A1, ..., An).
+
+O Administrador, no momento da criação de um badge, define os vários requisitos de cada
+
+nível. Para cada requisito temos título, descrição e imagem. Na descrição já se explica que
+
+evidências é necessário submeter. Um requisito pode ser representado por um card.
+
+Para cada Nível queremos um Badge. Para obter um Badge num determinado Nível, o
+
+consultor tem de cumprir todos os requisitos desse nível (por exemplo, para o nível júnior
+
+obtemos um badge quando os requisitos A1, ..., An estiverem evidenciados. Exemplo:
+
+Badge/certificado Júnior em Outsystems
+
+Um consultor pode candidatar-se a um qualquer nível (sem ter os badges dos níveis
+
+anteriores), desde que tenha os requisitos necessários.
+
+Quando nos candidatamos a um determinado Bagde pode, ou não, estar definido um intervalo
+
+temporal para obter o Badge. Esta regra não é de carater obrigatório. à Ver checklist de
+
+requisitos, pois isto está lá.
+
+Neste projeto vamos ter apenas um Learning Path, que é “Jornada Técnica”, embora a Softinsa
+
+tenha mais um learning path, que é “Power Skills”. No entanto, a Base de Dados deve permitir
+
+a adição de mais learning paths no futuro.
+
+
+
+
+
+
+
+Exemplo de um Use Case Genérico:
+
+Descrição do Workflow:
+
+1. Início
+
+• Estado: Open
+
+• Consultor: Regista-se e acede ao sistema
+
+• Ação: Submete candidatura a determinado badget, fazendo upload das evidências (Estado:
+
+Submitted).
+
+2. Talent Manager (vê todas as submissões, independentemente da área, da line, ...). Uma vez que temos
+
+vários user com este perfil, é importante registar qual avaliou e quando
+
+• Estado: Submitted
+
+• Ação: Valida as evidências.
+
+o Decisão:
+
+§ Correto: Envia ao Service Line (Estado: Em Validação) dessa área
+
+§ Incorreto: Retorna ao consultor para retificação. (Estado: Open)
+
+3. Service Line Leader (da área)
+
+• Estado: Em Validação
+
+• Ação: Realiza validação final.
+
+o Decisão:
+
+§ Aprovar: Notifica consultor e Badge fica disponível para publicação (Estado: Fechado).
+
+§ Rejeitar: Envia mail ao consultor (Estado: Fechado).
+
+§ Send Back: Retorna ao consultor com comentário (Estado: Open)
+
+4. Fim
+
+• Resultado Final:
+
+• Estado: Fechado
+
+o Badge aprovado e publicado.
+
+o Ou pedido rejeitado com feedback ao consultor.
+
+
+
+O Consultor submete a candidatura com as evidências para um determinado Badge
+
+O Perfil “Talent Manager” tem acesso a todos os Badges, independentemente das áreas e das
+
+service lines
+
+O Service Line Leader tem acesso a todos os Badges de todas as áreas da sua Service Line.
+
+Contudo, não tem acesso às áreas de outras Service Lines. Por isso, quando se regista tem de
+
+indicar a sua Service Line área.
+
+
+
+
+
+
+-------------------------------------------------
+
+Perfil do Consultor:
+Nº FrontOffice à Consultor: Validado
+1 Os utilizadores devem receber um email de confirmação de registo, antes de
+poderem utilizar a solução. Na primeira vez que um utilizador entrar na aplicação
+tem de alterar a password.
+2 O consultor ao registar, deve escolher a sua área, por forma a que ao iniciar a
+aplicação sejam mostrados os Badges preferenciais da sua área.
+3 Deverá ser possível o utilizador consultar os badges disponíveis na plataforma
+mesmo sem ser da sua área.
+4 Deve ter um Dashboard pessoal com progresso nos Learning Paths.
+5 Deve ter um sistema de upload de evidências (certificados, diplomas, relatórios).
+6 Deve ser possível visualização do status dos pedidos de Badges em tempo real.
+7 Deve ser possível consultar o histórico de badges obtidos e em processo.
+8 Deve ter um Catálogo de badges disponíveis com descrições.
+9 Deve ser possível consultar os requisitos para cada badge (Ver também requisito 19)
+10 Aceitação de termos RGPD para publicação e partilha de badges.
+11 Deve ser possível partilhar o seu badge no Linkedin.
+13 Deve ter um Sistema de pontos por badges obtidos.
+14 Deve ter um sistema de Badges de conquistas especiais (exemplos certificações pagas)
+15 Deve ter Métricas de progresso visual.
+16 Deve ter Celebração de marcos alcançados. (Exemplo 3 certificações propostas na
+timeline, … , atingir x badges num determinado período)
+17 Recomendações de próximos badges. Por exemplo, com base em nos próximos
+níveis de algo que já fez
+18 Deve ser possível fazer um download de Certificados personalizados em PDF.
+19 Deve receber um email de confirmação de candidatura nos badges.
+20 Deve ter notificações de aprovação/rejeição.
+21 Dever ter alertas de expiração de badges. O administrador pode (opcionalmente)
+definir um tempo de expiração para o Badge, permitindo, assim, determinar a data
+de expiração de um badge. Nem todos os badges têm data de expiração
+22 Deve ter Lembretes (exemplo: caso de ter definido com objetivos na timeline fazer
+determinadas formações…) . Exemplo: Tem até final do ano para cumprir certos
+requisitos, ...
+24 Deve ter uma galeria pública de badges obtidos.
+25 Cada Badge deve ter uma página individual, da Softinsa, que pode ser acedida via
+url, via badge, ou mesmo clicando o badge da assinatura.
+26 Sistema de verificação por link único para cada badge. Todos os Badges têm uma
+página pública. Assim, isto é o link para essa página
+27 Informações detalhadas sobre competências certificadas (para cada badge).
+28 Integração na página de badges, com www.softinsa.pt para visualizar info sobre
+competências da Softinsa.
+Bónus:
+12 Deve ser possível colocar o seu badge na assinatura do seu email, caso o consultor assim o
+entenda.
+23 Configuração de template de email (exemplo assinatura de email…) com os badges obtidos.
+
+
+Notar que cada Badge tem uma página única pública que comprova a certificação (ver requisitos 25 a
+27). Quando se carrega no Badge somos redirecionados para a página pública de badges da
+softinsa relativa ao consultor da softinsa que ateste que ele tem esse badge.
+Requisitos 13 a 16: O objetivo dos pontos serve, por exemplo, para o service line leader
+ver quem teve mais pontuações, tendo em vista, por exemplo, um aumento de ordenado
+ou a atribuição de uma compensação. Por exemplo, por cada 100 pontos + x euros de
+ordenado. Serve para identificar quais os melhores consultores.
+O ranking pode ser por pontos, embora possa ter um carater geral.
+Se um Badge expirar a pontuação que o consultor obteve com esse badge mantém-se
+Quem define o Sistema de pontos é o Administrador
+Vamos dar Liberdade (apelar à criatividade) aos grupos de trabalho para o sistema de
+gamificação e para as estatísticas do dashboard, embora se pressuponha que é por pontos
+e que visa identificar os melhores consultores. Este Sistema serve também para incentivar
+os consultores a fazer formação e para evidenciar talentos internos.
+Note-se, no entanto, que é importante considerar as estatísticas sugeridas neste
+documento.
+
+
+
+
+Perfil do Service Line:
+Nº FrontOffice à Perfil do Service Line: Validado
+1 Deverá ser possível o Service Lines consultar os badges disponíveis na plataforma
+mesmo sem ser da sua área.
+2 Deve ter um Dashboard pessoal com progresso de todos os consultores da sua Service
+Line
+3 Deve ser possível visualização do status dos pedidos de badges da sua service
+line/área em tempo real.
+4 Deve ser possível consultar o Histórico de badges da sua service line/área obtidos e
+em processo.
+5 Deve ter um Catálogo de badges disponíveis com descrições.
+6 Deve ser possível consultar os requisitos para cada badge
+8 Deve poder ver o sistema de pontos por badges da sua área o Administrador define o
+número de pontos de cada badge. Um badge pode não ter pontos
+9 Deve poder ver o sistema de Badges de conquistas especiais (Badges Premium)
+Exemplo: Um consultor cumpre x badges/pontos em x tempo tem uma conquista
+especial. Este requisito apela à criatividade dos estudantes.
+10 Deve ser possível gerar Relatórios de badges atribuídos na sua área/período.
+11 Deve ser possível fazer a exportação dos pedidos para Excel/PDF.
+12 Deve ser possível fazer a exportação dos Badges para Excel/PDF.
+13 Deve ser possível fazer a exportação dos consultores para Excel/PDF.
+14 Deve ser possível fazer a exportação de aprovações para Excel/PDF.
+15 Deve ser possível fazer um download de um Certificados em PDF, personalizados
+gerar certificados de badges
+16 Deve receber emails de pedidos de candidatura /validações de cursos/badges.
+17 Deve ter notificações de aprovação/rejeição;
+18 O Service Line deve poder visualizar/comparar o ranking de badges dos vários
+consultores da sua service Line.
+19 Possibilidade de consultar o histórico associado a cada processo de candidatura de
+badge
++++++++++++ BÓNUS ++++++++ > PERFIL DO Service Line
+1 Deve ter um sistema de métricas de comparação entre os vários consultores com a
+mesma experiência e da mesma área;
+7 Deve ser possível colocar o seu badge na assinatura do seu email.
+
+
+
+Perfil do Talent Manager:
+Nº FrontOffice à Perfil do Talent Manager: Validado
+1. Deverá ser possível o Talent Manager consultar os badges disponíveis na
+plataforma.
+2. Deve ter um Dashboard pessoal com progresso de todos os consultores da sua
+Service Line/área
+3. Deve ter um sistema de verificação de evidências para cada badge.
+4. Deve ser possível visualização do status dos pedidos de badges em tempo real.
+5. Deve ser possível consultar o Histórico de badges obtidos e em processo.
+6. Deve ter um Catálogo de badges disponíveis com descrições.
+7. Deve ser possível consultar os requisitos para cada badge
+8. Deve ser possível gerar Relatórios de badges atribuídos por área/período.
+9. Deve ser possível fazer a exportação dos pedidos para Excel/PDF.
+10. Deve ser possível fazer a exportação dos Badges para Excel/PDF.
+11. Deve ser possível fazer a exportação dos consultores para Excel/PDF.
+12. Deve ser possível fazer a exportação de aprovações para Excel/PDF.
+13. Deve ser possível fazer a exportação de rejeições para Excel/PDF.
+14. Deve ser possível colocar o seu badge na assinatura do seu email,
+15. Deve poder ver o sistema de pontos por badges.
+16. Deve poder ver o sistema de Badges de conquistas especiais
+17. Deve ser possível fazer um download de um Certificados em PDF, personalizados
+18. Deve receber emails de pedidos de candidatura /validações de cursos/badges.
+19. Deve ter notificações de aprovação/rejeição. Quando aprova ou rejeita devem ser
+enviadas notificações ao consultor (ver nível do talent no quadro de fluxos)
+20. Pode visualizar Badges próximos da data de expiração.
+21. Possibilidade de consultar o histórico associado a cada processo de candidatura de
+badge
++++++++++++ BÓNUS ++++++++ > PERFIL DO Talent Manager
+1 Deve ser possível criar uma Timeline de evolução profissional para cada consultor.
