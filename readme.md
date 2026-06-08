@@ -235,3 +235,85 @@ Ao cumprir **todos os requisitos de um nível**, o consultor obtém **1 Badge** 
   - *"Bom dia / Boa tarde / Boa noite"* → restantes situações (no idioma escolhido)
 - **Página de Informações/Avisos** (notificações PUSH): Admins/Service Lines/Talent Managers criam avisos visíveis a todos (ex: novo Learning Path disponível)
 - **Integração com Teams ou Slack**
+
+---
+---
+
+# 📊 Estado Atual de Implementação
+
+> Última atualização: Junho 2026 · Data de entrega: **27 de junho de 2026**
+> Pasta de trabalho atual: `PINT-beselga_main/Projeto`
+
+## Resumo
+A **plataforma Web está completa** para os 4 perfis (Consultor, Talent Manager, Service Line Leader, Administrador), incluindo a maioria dos bónus. A **app Mobile** (apenas Consultor) fica para a **Fase 5** (colega).
+
+| Componente | Estado |
+|---|---|
+| Backend API (Fase 2) | ✅ Completo |
+| Frontend Web (Fase 3/4) | ✅ Completo |
+| App Mobile (Fase 5) | ⏳ Por iniciar (colega) |
+
+## Stack Tecnológica
+- **Backend:** NestJS + TypeScript · PostgreSQL (Neon cloud) · autenticação por header `x-user-id`
+- **Frontend:** Next.js 16 (App Router) · TypeScript · Tailwind CSS v4 · shadcn/ui · Framer Motion · jsPDF + jspdf-autotable · xlsx
+- **i18n:** sistema próprio PT/EN/ES (`lib/i18n.ts`)
+- **Email:** `EmailService` (sem SMTP → loga na consola) · **Webhooks** Teams/Slack (`WebhookService`)
+- **Testes:** Jest (25 testes — constants, greeting, i18n)
+
+## Como arrancar
+```bash
+# Backend  → http://localhost:3001/api/v1
+cd Projeto/fase-2/backend-api
+npm install && npm run start:dev
+
+# Frontend → http://localhost:3000
+cd Projeto/fase-3-frontend
+npm install && npm run dev
+
+# Testes
+cd Projeto/fase-3-frontend && npm test
+```
+
+## Contas de teste
+| Email | Password | Perfil |
+|---|---|---|
+| `abreu@softinsa.pt` | `Softinsa2025!` | Consultor |
+| `faisca@softinsa.pt` | `Softinsa2025!` | Talent Manager |
+| `beselga@softinsa.pt` | `Softinsa2025!` | Service Line Leader |
+| `admin@softinsa.pt` | `Softinsa2025!` | Administrador |
+
+## Estado por área de requisitos
+| Área | Estado |
+|---|---|
+| Estrutura (LP/SL/Áreas/Níveis/Requisitos) + Workflow | ✅ |
+| **Consultor** (1–28 + bónus 12, 23) | ✅ (ver exceção 1 abaixo) |
+| **Service Line Leader** (1–19 + bónus 1, 7) | ✅ |
+| **Talent Manager** (1–21 + bónus 1) | ✅ |
+| **Administrador** (1–12 + bónus 10) | ✅ |
+| Requisitos Gerais (login, recuperar pass, logout, 4 perfis, HTTPS-ready) | ✅ |
+| Reporting mínimo (% mensal, range datas, LP, níveis, #users) | ✅ |
+| Bónus Gerais (3 idiomas + bandeiras, saudações traduzidas, avisos por SL/TM, Teams/Slack) | ✅ |
+
+## Funcionalidades-chave implementadas
+- Workflow completo Open → Submitted → Em Validação → Fechado (TM valida/devolve · SLL aprova/rejeita/devolve) com histórico auditável
+- Catálogo de badges com tags de **nível** e de **estado** da candidatura (submetido/em validação/aprovado)
+- Upload de evidências · candidaturas · publicação com RGPD · partilha LinkedIn · galeria pública · verificação por link único
+- Gamificação: pontos, ranking, conquistas especiais, **celebração de marcos**, recomendações, timeline
+- **Alertas de expiração** de badges (consultor) + vista de badges a expirar (Talent Manager)
+- Certificados PDF · **exportação Excel e PDF** (relatórios, pedidos, aprovações/rejeições, consultores)
+- Admin: gestão de utilizadores, badges, estrutura, avisos, notificações, RGPD, SLA, integrações
+- 3 idiomas (PT/EN/ES) com **bandeiras SVG** · **saudações contextuais traduzidas**
+- Formulários de login/registo/recuperar password com **validação visual a vermelho**
+- Avisos criáveis por **Admin / Service Line / Talent Manager**
+
+## Em falta / Standby
+| Item | Estado | Nota |
+|---|---|---|
+| **Envio real de email (SMTP)** | ⏸️ Standby | Os 5 gatilhos (confirmação candidatura, aviso validador, aprovação, rejeição, devolução) estão programados; logam na consola. Basta configurar `SMTP_*` no `.env`. |
+| **Email de confirmação de registo** | ⚠️ Parcial | Existe a coluna `email_verified`; o envio não está ligado (depende do SMTP). O "alterar password no 1º login" está ✅. |
+| **Email automático de SLA ultrapassado** (Admin bónus 1) | ❌ | SLA cria-se/gere-se, mas falta a deteção de breach + envio. |
+| **App Mobile + Notificações PUSH** | ⏳ Fase 5 | Da responsabilidade do colega. |
+
+## Notas
+- **HTTPS:** o frontend usa `NEXT_PUBLIC_API_URL` (env var) — pronto para produção; em desenvolvimento usa `http://localhost`.
+- **"Tempo real":** o estado dos pedidos atualiza ao carregar/refrescar a página (o sino de notificações faz polling de 30s).
