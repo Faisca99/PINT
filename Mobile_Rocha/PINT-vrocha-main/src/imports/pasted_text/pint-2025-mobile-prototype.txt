@@ -1,0 +1,812 @@
+Atualiza o design/protótipo mobile existente da plataforma “PINT 2025 — Plataforma de Badges da Softinsa”.
+
+IMPORTANTE:
+A app mobile deve ser EXCLUSIVAMENTE para o perfil CONSULTOR.
+Remove, oculta ou ignora todos os fluxos e ecrãs de:
+- Talent Manager
+- Service Line Leader
+- Administrador/Gestor
+
+Esses perfis existem apenas na plataforma Web. A aplicação mobile é só para consultores.
+
+Objetivo:
+Criar uma frontend mobile completa, moderna e funcional em termos visuais para o perfil Consultor da plataforma de badges digitais Softinsa. A app não precisa de backend real nesta fase. Deve usar dados mockados/estáticos para demonstrar todos os fluxos, mas deve estar desenhada de forma preparada para futura ligação à API.
+
+Stack visual pretendida:
+- React Native + Expo como referência de implementação futura
+- Expo Router como referência de navegação
+- TypeScript como referência
+- AsyncStorage para sessão futura
+- Axios/API layer futura
+- Expo Document Picker/Image Picker para upload futuro
+- Expo Print/Sharing para certificados futuros
+- Expo Notifications para push futuro
+- Expo Linking para LinkedIn/deep links futuros
+
+Mas nesta fase quero APENAS frontend/protótipo visual no Figma.
+
+Estilo visual:
+- Manter a mesma vibe da plataforma Web PINT/Softinsa.
+- Design corporativo, tecnológico, moderno e limpo.
+- Visual mobile premium, com cards arredondados, sombras suaves, ícones consistentes e boa hierarquia.
+- Paleta principal:
+  - Azul escuro: #1e4d8c
+  - Cyan/acento: #0bacda
+  - Verde sucesso: #2d9d6e
+  - Amarelo/âmbar aviso: #f59e0b
+  - Vermelho erro/rejeição: #dc2626
+  - Fundo cinza claro: #f4f5f8
+  - Cards brancos: #ffffff
+  - Texto principal azul muito escuro: #0f1c2e
+- Usar gradientes subtis azul escuro → cyan em botões principais, headers e elementos premium.
+- Badges devem parecer certificados digitais premium.
+- Usar tipografia moderna semelhante a IBM Plex Sans ou equivalente.
+- Usar ícones modernos e consistentes.
+- Frame base mobile: 390x844.
+- Usar Auto Layout em todos os ecrãs.
+- Criar componentes reutilizáveis e variantes.
+
+Arquitetura da app:
+A app deve ter navegação mobile simples para Consultor.
+
+Bottom Navigation:
+1. Início
+2. Badges
+3. Candidaturas
+4. Timeline
+5. Perfil
+
+Header comum:
+- Saudação contextual
+- Nome/avatar do consultor
+- Sino de notificações com contador
+- Botão/ícone de idioma quando aplicável
+
+Menu Perfil/Mais deve incluir:
+- Meus Badges
+- Conquistas
+- Leaderboard
+- Recomendações
+- Lembretes
+- Avisos
+- Certificados
+- Assinatura de email
+- Definições
+- Terminar sessão
+
+Criar apenas ecrãs relacionados com Consultor.
+
+==================================================
+1. ECRÃS DE AUTENTICAÇÃO
+==================================================
+
+Criar/atualizar os seguintes ecrãs:
+
+1. Splash Screen
+- Logo Softinsa/PINT
+- Fundo com gradiente azul
+- Texto: “Digital Badges Platform”
+
+2. Onboarding
+- 3 slides:
+  - “Evolui as tuas competências”
+  - “Submete evidências”
+  - “Partilha as tuas conquistas”
+- Botões “Seguinte”, “Saltar” e “Começar”
+
+3. Login
+- Email
+- Password
+- Toggle/checkbox “Guardar dados de login”
+- Link “Esqueci-me da password”
+- Botão “Entrar”
+- Link “Criar conta”
+- Validações visuais a vermelho
+- Estado de erro de credenciais
+- Seletor de idioma PT/EN/ES
+
+4. Registo
+- Nome completo
+- Email
+- Password
+- Confirmar password
+- Picker de Área
+- Mostrar Service Line associada à área escolhida
+- Checkbox RGPD/termos
+- Botão “Criar conta”
+- Mensagem de sucesso: “Conta criada com sucesso. Confirma o teu email para continuar.”
+
+5. Confirmação de Email
+- Estado de sucesso
+- Texto: “O seu email foi confirmado com sucesso”
+- Botão “Entrar”
+
+6. Primeira Entrada / Alterar Password
+- Nova password
+- Confirmar nova password
+- Regras de password
+- Botão “Alterar password”
+- Mensagem de sucesso
+
+7. Recuperar Password
+Fluxo em 3 passos:
+- Passo 1: inserir email
+- Passo 2: inserir token/código de recuperação
+- Passo 3: nova password + confirmar password
+- Mensagem final: “A sua password foi redefinida com sucesso”
+- Botão cancelar
+
+8. Logout
+- Modal: “Pretende terminar a sua sessão?”
+- Botões “Cancelar” e “Terminar sessão”
+
+==================================================
+2. DASHBOARD CONSULTOR
+==================================================
+
+Criar dashboard completo para o consultor.
+
+Conteúdo:
+- Saudação contextual:
+  - “Bem-vindo!”
+  - “Seja bem-vindo novamente”
+  - “Bom dia / Boa tarde / Boa noite”
+- Nome do consultor, avatar, área e service line
+- Cards de resumo:
+  - Pontos totais
+  - Badges obtidos
+  - Candidaturas em curso
+  - Ranking atual
+- Progresso nos Learning Paths
+- Jornada Técnica como learning path principal
+- Barras de progresso por nível:
+  - A — Júnior — verde
+  - B — Intermédio — azul
+  - C — Sénior — âmbar
+  - D — Especialista — roxo
+  - E — Líder de Conhecimento — vermelho
+- Recomendações de próximos badges
+- Badges próximos de expiração
+- Últimas notificações
+- Próximos lembretes
+- CTA principal: “Explorar Badges”
+
+Usar cards compactos e visual mobile-first.
+
+==================================================
+3. CATÁLOGO DE BADGES
+==================================================
+
+Criar ecrã “Badges”.
+
+Funcionalidades visuais:
+- Barra de pesquisa
+- Pull-to-refresh visual
+- Filtros em bottom sheet:
+  - Learning Path
+  - Service Line
+  - Área
+  - Nível A/B/C/D/E
+  - Estado
+  - Pontos
+- Tabs:
+  - Recomendados
+  - Minha Área
+  - Todos
+  - Obtidos
+
+Badge card deve mostrar:
+- Ícone/imagem do badge
+- Nome do badge
+- Descrição curta
+- Learning Path
+- Service Line
+- Área
+- Nível
+- Pontos
+- Estado:
+  - Disponível
+  - Em processo
+  - Obtido
+  - Expirado
+- Progresso/requisitos, quando aplicável
+
+Usar exemplos corretos do projeto:
+- Learning Path: Jornada Técnica
+- Futuro Learning Path: Power Skills
+- Service Lines:
+  - Hybrid Cloud
+  - Application Operations
+  - Sourcing & Talent Management
+- Áreas:
+  - LowCode
+  - DevSecOps & IT Automation
+  - Talent Management
+- Níveis:
+  - A Júnior
+  - B Intermédio
+  - C Sénior
+  - D Especialista
+  - E Líder de Conhecimento
+
+==================================================
+4. DETALHE DO BADGE
+==================================================
+
+Criar ecrã de detalhe para badge.
+
+Deve conter:
+- Header premium com imagem do badge
+- Nome do badge
+- Código do badge, se aplicável
+- Learning Path
+- Service Line
+- Área
+- Nível
+- Pontos
+- Descrição completa
+- Competências certificadas
+- Lista de requisitos
+- Instruções de evidência por requisito
+- Intervalo temporal para obter badge, se existir
+- Data de expiração, se existir
+- Estado do utilizador face ao badge:
+  - disponível
+  - candidatura aberta
+  - submetido
+  - em validação
+  - obtido
+- Botão principal dinâmico:
+  - “Candidatar-me”
+  - “Continuar candidatura”
+  - “Ver candidatura”
+  - “Ver certificado”
+- Secção “Próximos badges recomendados”
+
+==================================================
+5. CANDIDATURAS
+==================================================
+
+Criar ecrã “Candidaturas”.
+
+Tabs:
+- Todas
+- Open
+- Submitted
+- Em Validação
+- Fechadas
+
+Cada card de candidatura deve mostrar:
+- Nome do badge
+- Nível
+- Área
+- Estado
+- Data de criação
+- Data de submissão
+- Última atualização
+- Resultado final, quando aplicável
+- Indicador de SLA/tempo, se aplicável
+
+Estados com cores:
+- Open/Aberto: cinza
+- Submitted/Submetida: âmbar
+- Em Validação: azul
+- Aprovada/Fechada: verde
+- Rejeitada: vermelho
+- Devolvida: laranja
+
+Criar também empty state:
+- “Ainda não tens candidaturas”
+- Botão “Explorar Badges”
+
+==================================================
+6. CRIAR / EDITAR CANDIDATURA
+==================================================
+
+Criar fluxo de candidatura.
+
+Ecrã:
+- Nome do badge
+- Estado atual da candidatura
+- Lista de requisitos
+- Para cada requisito:
+  - título
+  - descrição
+  - instruções de evidência
+  - estado: sem evidência / evidência anexada / erro
+  - botão “Adicionar evidência”
+- Botão “Guardar rascunho”
+- Botão “Submeter candidatura”
+
+Validações visuais:
+- Não permitir submeter sem evidências obrigatórias
+- Mostrar erro: “Adiciona evidências para todos os requisitos obrigatórios”
+- Modal de confirmação antes de submeter
+- Mensagem de sucesso:
+  - “Candidatura submetida com sucesso”
+  - “Receberás um email de confirmação”
+
+==================================================
+7. UPLOAD DE EVIDÊNCIAS
+==================================================
+
+Criar bottom sheet/ecrã para adicionar evidência.
+
+Opções:
+- Escolher documento
+- Escolher imagem
+- Tirar fotografia
+- Adicionar link
+
+Campos:
+- Nome do ficheiro/link
+- Descrição opcional
+- Requisito associado
+- Preview do ficheiro
+- Tamanho e tipo do ficheiro
+
+Estados:
+- Upload em progresso
+- Upload concluído
+- Upload falhado
+- Ficheiro inválido
+- Remover/substituir evidência
+
+Nota:
+Mesmo sendo frontend sem backend, deve mostrar esta experiência como mockada.
+
+==================================================
+8. DETALHE DA CANDIDATURA
+==================================================
+
+Criar ecrã detalhado.
+
+Conteúdo:
+- Badge associado
+- Estado atual
+- Timeline visual do processo:
+  1. Open
+  2. Submitted
+  3. Em Validação
+  4. Fechado
+- Evidências submetidas
+- Comentários do Talent Manager
+- Comentários do Service Line Leader
+- Histórico auditável:
+  - data
+  - ação
+  - comentário
+  - responsável
+- Ações disponíveis:
+  - Editar se Open
+  - Adicionar evidência se Open
+  - Submeter novamente se devolvida
+  - Ver certificado se aprovada
+
+==================================================
+9. MEUS BADGES
+==================================================
+
+Criar ecrã “Meus Badges”.
+
+Conteúdo:
+- Galeria de badges obtidos
+- Filtros:
+  - nível
+  - área
+  - validade
+  - publicado/privado
+- Cards com:
+  - imagem do badge
+  - nome
+  - nível
+  - pontos
+  - data de emissão
+  - validade
+  - estado ativo/expirado
+  - publicado/privado
+
+Ações:
+- Ver certificado
+- Publicar na galeria
+- Copiar link de verificação
+- Partilhar no LinkedIn
+- Usar na assinatura de email
+
+Antes de publicar:
+- Mostrar bottom sheet RGPD
+- Checkbox: “Aceito publicar este badge na galeria pública”
+- Botão “Publicar badge”
+
+==================================================
+10. CERTIFICADO PDF
+==================================================
+
+Criar ecrã de preview de certificado.
+
+Mostrar:
+- Branding Softinsa/PINT
+- “Certificado de Competência”
+- Nome do consultor
+- Nome do badge
+- Nível
+- Competências certificadas
+- Data de emissão
+- Validade
+- Código/link de verificação
+
+Botões:
+- Download PDF
+- Partilhar
+- Copiar link
+
+Mesmo sem backend, mostrar comportamento visual de sucesso.
+
+==================================================
+11. LINKEDIN SHARE
+==================================================
+
+Criar modal/ecrã de partilha LinkedIn.
+
+Mostrar:
+- Preview do post
+- Nome do badge
+- Link público de verificação
+- Botão “Partilhar no LinkedIn”
+- Botão “Copiar texto”
+- Mensagem de sucesso visual
+
+==================================================
+12. CONQUISTAS / ACHIEVEMENTS
+==================================================
+
+Criar ecrã de conquistas especiais.
+
+Estados:
+- Conquistada
+- Em progresso
+- Bloqueada
+
+Exemplos:
+- Primeiro Badge
+- 3 Badges na Timeline
+- 5 Badges Obtidos
+- Especialista da Área
+- Certificação Premium
+
+Cada card deve mostrar:
+- ícone/medalha
+- nome
+- descrição
+- pontos bónus
+- progresso
+- data de conquista, se existir
+
+==================================================
+13. LEADERBOARD
+==================================================
+
+Criar ecrã de ranking.
+
+Tabs:
+- Geral
+- Minha Área
+- Service Line
+- Mensal
+
+Mostrar:
+- Top 3 com destaque visual premium
+- Lista de consultores
+- Avatar
+- Nome
+- Área
+- Pontos
+- Número de badges
+- Posição
+- Destaque para o consultor atual
+
+==================================================
+14. TIMELINE DE EVOLUÇÃO
+==================================================
+
+Criar ecrã Timeline.
+
+Timeline vertical com eventos:
+- Candidatura criada
+- Candidatura submetida
+- Candidatura enviada para validação
+- Badge aprovado
+- Badge rejeitado
+- Badge conquistado
+- Conquista especial desbloqueada
+- Certificado gerado
+
+Filtros:
+- Todos
+- Badges
+- Candidaturas
+- Conquistas
+
+Mostrar marcos:
+- 1.º badge
+- 3 badges
+- 5 badges
+- 10 badges
+
+==================================================
+15. RECOMENDAÇÕES
+==================================================
+
+Criar ecrã “Recomendações”.
+
+Cards de próximos badges com:
+- nome
+- área
+- nível
+- pontos
+- motivo da recomendação:
+  - “Próximo nível”
+  - “Popular na tua área”
+  - “Completa a tua jornada”
+  - “Baseado nos teus badges”
+- botão “Ver badge”
+
+==================================================
+16. LEMBRETES
+==================================================
+
+Criar ecrã “Lembretes”.
+
+Funcionalidades visuais:
+- Lista de lembretes
+- Criar novo lembrete
+- Título
+- Mensagem
+- Data/hora
+- Estado ativo/dispensado
+- Botão dispensar
+- Notificação local mockada
+
+Exemplos:
+- “Tens até final do ano para cumprir certos requisitos”
+- “Badge próximo de expirar”
+- “Candidatura aguarda evidências”
+
+==================================================
+17. NOTIFICAÇÕES
+==================================================
+
+Criar centro de notificações.
+
+Tipos:
+- Candidatura submetida
+- Candidatura aprovada
+- Candidatura rejeitada
+- Candidatura devolvida
+- Badge próximo de expiração
+- Novo aviso
+- Lembrete
+- SLA/tempo ultrapassado
+
+Funcionalidades:
+- contador no sino
+- lista de notificações
+- estado lida/não lida
+- marcar todas como lidas
+- filtros por tipo
+
+==================================================
+18. AVISOS
+==================================================
+
+Criar ecrã de avisos visíveis para consultor.
+
+Mostrar:
+- título
+- mensagem
+- data
+- categoria
+- estado lido/não lido
+- detalhe do aviso
+
+Exemplos:
+- Novo Learning Path disponível
+- Manutenção da plataforma
+- Nova campanha de certificações
+
+==================================================
+19. GALERIA PÚBLICA
+==================================================
+
+Criar ecrã de galeria pública do consultor.
+
+Mostrar:
+- perfil público
+- nome
+- cargo/área
+- lista de badges publicados
+- botão partilhar galeria
+- badges com link para detalhe público
+
+==================================================
+20. VERIFICAÇÃO PÚBLICA POR TOKEN
+==================================================
+
+Criar ecrã público `/verify/:token`.
+
+Mostrar:
+- estado “Badge verificado ✓”
+- ou “Badge expirado”
+- ou “Badge não encontrado”
+- nome do consultor
+- nome do badge
+- nível
+- competências
+- data de emissão
+- validade
+- código de verificação
+
+Este ecrã deve poder ser visto sem login.
+
+==================================================
+21. PERFIL / SETTINGS
+==================================================
+
+Criar ecrã Perfil.
+
+Mostrar:
+- avatar
+- nome
+- email
+- área
+- service line
+- pontos
+- badges obtidos
+
+Opções:
+- Editar perfil visual
+- Alterar password
+- Idioma PT/EN/ES
+- Preferências de notificações
+- Preferências RGPD
+- Privacidade da galeria pública
+- Sobre a aplicação
+- Terminar sessão
+
+==================================================
+22. COMPONENTES REUTILIZÁVEIS
+==================================================
+
+Criar ou atualizar componentes:
+
+- AppHeader
+- BottomNavigation
+- BadgeCard
+- BadgeDetailHeader
+- StatusChip
+- LevelChip
+- DashboardMetricCard
+- ProgressBar
+- LearningPathProgress
+- ApplicationCard
+- EvidenceCard
+- UploadBottomSheet
+- NotificationItem
+- ReminderCard
+- TimelineItem
+- AchievementCard
+- LeaderboardRow
+- CertificatePreview
+- RGPDConsentSheet
+- PublicVerificationCard
+- EmptyState
+- LoadingState
+- ErrorState
+- SuccessModal
+- ConfirmationModal
+- FilterBottomSheet
+
+==================================================
+23. ESTADOS VISUAIS OBRIGATÓRIOS
+==================================================
+
+Criar variantes/frames para:
+
+- Loading
+- Empty state
+- Error state
+- Sem internet
+- Formulário inválido
+- Upload em progresso
+- Upload concluído
+- Upload falhado
+- Candidatura submetida
+- Candidatura aprovada
+- Candidatura rejeitada
+- Candidatura devolvida
+- Badge conquistado
+- Badge expirado
+- RGPD aceite
+- Link copiado
+- PDF gerado
+- Notificação recebida
+
+==================================================
+24. DADOS MOCKADOS PARA O DESIGN
+==================================================
+
+Usar exemplos coerentes:
+
+Consultor:
+- Francisco Abreu
+- Área: LowCode
+- Service Line: Hybrid Cloud
+- Pontos: 350
+- Badges obtidos: 3
+- Candidaturas em curso: 2
+
+Badges:
+- LowCode Júnior
+- LowCode Intermédio
+- DevSecOps Júnior
+- Talent Management Júnior
+- LowCode Sénior
+- LowCode Especialista
+
+Estados:
+- Disponível
+- Open
+- Submitted
+- Em Validação
+- Fechado/Aprovado
+- Fechado/Rejeitado
+- Expirado
+
+Níveis:
+- A — Júnior — 50 pts
+- B — Intermédio — 100 pts
+- C — Sénior — 250 pts
+- D — Especialista — 400 pts
+- E — Líder de Conhecimento — 600 pts
+
+==================================================
+25. ORGANIZAÇÃO DO FICHEIRO FIGMA
+==================================================
+
+Organizar em páginas:
+
+1. Cover
+2. Design System
+3. Components
+4. Auth
+5. Consultant App
+6. Public Pages
+7. Prototype Flow
+
+Não criar páginas para Admin, Talent Manager ou Service Line Leader.
+
+Na página “Prototype Flow”, criar fluxos navegáveis:
+
+Fluxo 1 — Login:
+Splash > Onboarding > Login > Dashboard
+
+Fluxo 2 — Registo:
+Registo > Escolher Área > Aceitar RGPD > Confirmar Email > Login
+
+Fluxo 3 — Candidatura:
+Dashboard > Badges > Detalhe Badge > Candidatar > Upload Evidências > Submeter > Candidatura Submetida
+
+Fluxo 4 — Acompanhamento:
+Candidaturas > Detalhe Candidatura > Histórico > Estado
+
+Fluxo 5 — Badge Obtido:
+Meus Badges > Certificado > Publicar Badge > RGPD > LinkedIn Share
+
+Fluxo 6 — Público:
+Verificação por Token > Galeria Pública
+
+Fluxo 7 — Perfil:
+Perfil > Definições > Idioma > Logout
+
+Resultado esperado:
+Uma frontend/protótipo mobile completa apenas para Consultor, visualmente consistente com a plataforma Web PINT/Softinsa, pronta para servir de base a implementação futura em React Native + Expo, mas sem backend real nesta fase.

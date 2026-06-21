@@ -1,0 +1,898 @@
+Cria uma app mobile completa em Figma para a plataforma “PINT 2025 — Plataforma de Badges da Softinsa”.
+
+Objetivo:
+Desenhar uma aplicação mobile com a mesma identidade visual, vibe, linguagem visual, componentes e experiência da versão Web existente. A app deve parecer uma extensão natural da plataforma Web, não um produto diferente. Deve manter o estilo corporativo moderno, tecnológico, limpo, profissional e gamificado da Softinsa/IBM, com dashboards, cards, badges, estados de validação, progresso visual e navegação mobile fluida.
+
+A app deve ser desenhada para mobile, principalmente iPhone 14/15 ou equivalente, frame base 390x844, com layout responsivo também adaptável a Android. Usar Auto Layout em todos os ecrãs. Criar componentes reutilizáveis, variantes, estilos de texto, estilos de cor, ícones e estados interativos.
+
+IMPORTANTE:
+A app mobile deve incluir todas as funcionalidades da plataforma Web, adaptadas ao formato mobile. Não simplificar demasiado. Deve ter ecrãs completos para os 4 perfis:
+1. Consultor
+2. Talent Manager
+3. Service Line Leader
+4. Administrador/Gestor
+
+A experiência deve ser mobile-first, mas com a mesma estrutura funcional da Web.
+
+Identidade visual:
+- Estilo moderno, empresarial, tecnológico e limpo.
+- Usar uma paleta próxima da Web: tons de azul escuro/navy, azul vivo, branco, cinzentos claros, gradientes subtis e cores de estado.
+- Cores de estado:
+  - Submitted: azul
+  - Em Validação: roxo/azul
+  - Open/Devolvido: amarelo/laranja
+  - Fechado/Aprovado: verde
+  - Rejeitado: vermelho
+  - Expirado: cinzento/vermelho
+- Cards com cantos arredondados, sombras suaves, espaçamento generoso e hierarquia clara.
+- Badges devem ter visual premium: medalhas, ícones, contornos circulares, brilho subtil, níveis A/B/C/D/E bem identificados.
+- Usar tipografia moderna, legível e corporativa.
+- Usar ícones consistentes para badges, dashboard, candidaturas, notificações, ranking, certificados, utilizadores, configurações, relatórios, RGPD, SLA e integrações.
+- Manter uma estética semelhante à plataforma Web: dashboards com cards, listas filtráveis, tabs, chips de status, botões primários azuis, botões secundários claros e modais limpos.
+
+Estrutura de navegação mobile:
+Criar uma navegação mobile profissional:
+- Bottom Navigation para ações principais do perfil.
+- Menu lateral/hambúrguer ou página “Mais” para funcionalidades secundárias.
+- Header com saudação contextual, avatar do utilizador, sino de notificações e seletor de idioma quando relevante.
+- Breadcrumbs não são necessários em mobile; usar título de página e botão voltar.
+- Usar tabs horizontais em páginas com muitas categorias.
+- Usar filtros compactos em bottom sheets.
+- Usar modais/bottom sheets para ações como aprovar, rejeitar, devolver, confirmar logout, escolher filtros, anexar evidências e alterar idioma.
+
+Criar os seguintes componentes reutilizáveis:
+1. App Header
+2. Bottom Navigation
+3. Side/Menu Drawer
+4. Badge Card
+5. Badge Detail Header
+6. Progress Card
+7. Dashboard KPI Card
+8. Status Chip
+9. Level Chip A/B/C/D/E
+10. Learning Path Progress Bar
+11. Application Card
+12. Evidence Upload Card
+13. Timeline Item
+14. Notification Item
+15. Ranking Row
+16. User Card
+17. Report Filter Card
+18. Export Button Group
+19. Empty State
+20. Loading State
+21. Error State
+22. Confirmation Modal
+23. Action Bottom Sheet
+24. Certificate Preview Card
+25. Public Badge Verification Card
+26. Language Selector
+27. RGPD Consent Card
+28. SLA Alert Card
+29. Integration Card
+30. Notice/Aviso Card
+
+Perfis e funcionalidades:
+
+========================
+1. ECRÃS PÚBLICOS / AUTH
+========================
+
+Criar ecrãs completos para:
+
+1. Splash Screen
+- Logo/branding Softinsa/PINT.
+- Fundo com gradiente tecnológico.
+- Pequena tagline: “Digital Badges Platform”.
+
+2. Onboarding / Welcome
+- Explicar rapidamente badges digitais, learning paths, progresso e certificação.
+- 3 slides curtos:
+  - “Evolui as tuas competências”
+  - “Submete evidências”
+  - “Partilha conquistas profissionais”
+
+3. Login
+- Campos: Email e Password.
+- Checkbox/toggle “Guardar dados de login”.
+- Link “Esqueci-me da password”.
+- Botão principal “Entrar”.
+- Link “Criar conta”.
+- Validações visuais a vermelho para campos inválidos.
+- Estado de erro: credenciais inválidas.
+- Idioma no topo: PT/EN/ES.
+
+4. Registo
+- Campos: nome, apelido, email, password, confirmar password.
+- Escolha de área/service line.
+- Aceitação de termos RGPD.
+- Botão “Criar conta”.
+- Mensagem de confirmação de registo.
+- Estado a indicar que será enviado email de confirmação.
+
+5. Confirmar Email
+- Ecrã de sucesso: “O seu email foi confirmado com sucesso”.
+- Botão “Entrar”.
+
+6. Primeira Entrada / Alterar Password
+- Campo password atual/temporária.
+- Nova password.
+- Confirmar password.
+- Regras de password visíveis.
+- Mensagem de sucesso.
+
+7. Recuperar Password
+- Introduzir email.
+- Botão “Enviar instruções”.
+- Ecrã de confirmação.
+- Fluxo de nova password + confirmar password.
+- Mensagem final: “A sua password foi redefinida com sucesso”.
+- Opção cancelar.
+
+8. Logout Modal
+- Modal com a mensagem: “Pretende terminar a sua sessão?”
+- Botões: Cancelar / Terminar sessão.
+
+========================
+2. CONSULTOR — APP MOBILE PRINCIPAL
+========================
+
+Criar ecrãs para o perfil Consultor:
+
+Bottom Navigation do Consultor:
+- Início
+- Badges
+- Candidaturas
+- Timeline
+- Mais
+
+2.1 Dashboard Consultor
+- Saudação contextual:
+  - “Bem-vindo!”
+  - “Seja bem-vindo novamente”
+  - “Bom dia / Boa tarde / Boa noite”
+- Avatar, nome, área e nível atual.
+- Cards de resumo:
+  - Badges obtidos
+  - Candidaturas em curso
+  - Pontos totais
+  - Ranking atual
+- Progresso nos Learning Paths.
+- Card “Jornada Técnica”.
+- Mostrar Service Line e área preferencial.
+- Recomendações de próximos badges.
+- Badges próximos de expiração.
+- Últimas notificações.
+- Próximo lembrete.
+- CTA: “Explorar Badges”.
+- Visual moderno com cards e progress bars.
+
+2.2 Catálogo de Badges
+- Lista/grid mobile de badges disponíveis.
+- Filtros por:
+  - Learning Path
+  - Service Line
+  - Área
+  - Nível A/B/C/D/E
+  - Estado: disponível, obtido, em processo
+  - Pontos
+- Barra de pesquisa.
+- Tabs:
+  - Recomendados
+  - Minha Área
+  - Todos
+  - Obtidos
+- Badge Card com:
+  - imagem/ícone
+  - título
+  - nível
+  - pontos
+  - área
+  - estado
+  - progresso/requisitos cumpridos
+- Empty state caso não existam resultados.
+
+2.3 Detalhe do Badge
+- Header com imagem grande do badge.
+- Título, área, service line, nível, pontos.
+- Descrição do badge.
+- Competências certificadas.
+- Lista de requisitos necessários.
+- Evidências exigidas.
+- Intervalo temporal para obter o badge, se existir.
+- Expiração, se existir.
+- Consultores que já obtiveram, se aplicável.
+- Botão principal:
+  - “Candidatar-me”
+  - ou “Continuar candidatura”
+  - ou “Ver certificado”
+- Botão secundário: “Partilhar” quando obtido.
+- Secção de badges relacionados/próximos níveis.
+- Visual premium e gamificado.
+
+2.4 Nova Candidatura
+- Selecionar badge.
+- Mostrar requisitos um a um.
+- Para cada requisito:
+  - upload/adicionar evidência
+  - título da evidência
+  - descrição
+  - ficheiro anexado
+  - estado da evidência
+- Botão “Guardar rascunho”.
+- Botão “Submeter candidatura”.
+- Confirmação antes de submeter.
+- Mensagem de sucesso: “Candidatura submetida com sucesso”.
+- Estado inicial Open.
+- Após submissão: Submitted.
+
+2.5 Upload de Evidências
+- Bottom sheet ou ecrã dedicado.
+- Opções:
+  - tirar fotografia
+  - escolher ficheiro
+  - escolher imagem
+  - anexar link
+- Mostrar tipos permitidos: PDF, PNG, JPG, DOCX.
+- Mostrar tamanho máximo.
+- Preview do ficheiro.
+- Estado de upload.
+- Possibilidade de remover/substituir evidência.
+- Validações visuais.
+
+2.6 Lista de Candidaturas
+- Tabs:
+  - Todas
+  - Open
+  - Submitted
+  - Em Validação
+  - Fechadas
+- Cards com:
+  - nome do badge
+  - nível
+  - data
+  - estado
+  - último comentário
+  - progresso
+- Pesquisa e filtros.
+- Pull-to-refresh.
+- Empty state.
+
+2.7 Detalhe da Candidatura
+- Informação do badge.
+- Estado atual com timeline visual:
+  - Open
+  - Submitted
+  - Em Validação
+  - Fechado
+- Lista de evidências submetidas.
+- Comentários do Talent Manager ou Service Line Leader.
+- Histórico completo de alterações.
+- Botões conforme estado:
+  - editar
+  - adicionar evidências
+  - submeter novamente
+  - cancelar
+- Timeline auditável com data, pessoa e ação.
+
+2.8 Meus Badges
+- Galeria privada dos badges obtidos.
+- Cards premium.
+- Filtros por Learning Path, área, nível, data e validade.
+- Estado:
+  - ativo
+  - expirado
+  - publicado
+  - privado
+- Ações:
+  - Ver certificado
+  - Publicar na galeria
+  - Partilhar no LinkedIn
+  - Copiar link de verificação
+  - Usar na assinatura de email
+
+2.9 Certificado PDF
+- Preview mobile do certificado.
+- Dados:
+  - nome do consultor
+  - badge
+  - competências
+  - data de emissão
+  - validade
+  - código/link de verificação
+- Botões:
+  - Download PDF
+  - Partilhar
+  - Copiar link
+
+2.10 Galeria Pública
+- Perfil público do consultor.
+- Avatar/nome/cargo/área.
+- Lista de badges publicados.
+- Cada badge abre página pública individual.
+- Botão de partilha.
+- Estado vazio se não houver badges públicos.
+
+2.11 Página Pública de Badge / Verificação
+- Ecrã acessível por token/link.
+- Mostrar badge, consultor, competências, data de emissão, validade.
+- Estado de verificação:
+  - “Badge válido”
+  - “Badge expirado”
+  - “Badge não encontrado”
+- Visual de confiança/certificação.
+- Botão “Ver mais badges deste consultor”.
+
+2.12 Timeline de Evolução Profissional
+- Timeline vertical mobile.
+- Eventos:
+  - badge obtido
+  - candidatura submetida
+  - candidatura aprovada
+  - conquista especial
+  - certificado adicionado
+  - milestones
+- Filtros por data/tipo.
+- Cards com ícone e cor.
+- Celebrações visuais quando atinge marcos.
+
+2.13 Achievements / Conquistas Especiais
+- Lista de conquistas especiais.
+- Cards com medalhas.
+- Estados:
+  - bloqueada
+  - em progresso
+  - conquistada
+- Exemplos:
+  - “3 certificações na timeline”
+  - “Primeiro badge”
+  - “Especialista”
+  - “Certificação paga”
+- Progresso visual até desbloquear.
+
+2.14 Leaderboard / Ranking
+- Ranking por pontos.
+- Avatar, nome, área, pontos e posição.
+- Destaque para o utilizador atual.
+- Filtros:
+  - geral
+  - minha área
+  - service line
+  - mês
+  - ano
+- Top 3 com visual premium.
+
+2.15 Recomendações
+- Ecrã com próximos badges sugeridos.
+- Baseado nos badges já obtidos e níveis seguintes.
+- Mostrar motivo da recomendação:
+  - “Próximo nível”
+  - “Popular na tua área”
+  - “Expira em breve”
+  - “Completa a tua jornada”
+
+2.16 Lembretes
+- Lista de lembretes.
+- Exemplos:
+  - “Tens até final do ano para cumprir certos requisitos”
+  - “Badge próximo da expiração”
+  - “Candidatura aguarda evidências”
+- Estado lido/não lido.
+- Ações rápidas.
+
+2.17 Notificações
+- Centro de notificações.
+- Notificações de:
+  - aprovação
+  - rejeição
+  - send back
+  - novo aviso
+  - SLA ultrapassado
+  - expiração
+  - lembrete
+- Marcar como lida.
+- Filtros.
+- Badge counter no sino.
+
+2.18 Assinatura de Email
+- Ecrã para configurar template de assinatura.
+- Escolher badges obtidos.
+- Preview da assinatura.
+- Copiar HTML/texto.
+- Botão “Copiar assinatura”.
+
+2.19 Partilha LinkedIn
+- Ecrã/modal de partilha.
+- Preview do post.
+- Botão “Partilhar no LinkedIn”.
+- Copiar texto/link.
+
+2.20 Settings Consultor
+- Perfil pessoal.
+- Idioma: Português, Inglês, Espanhol.
+- Preferências de notificações.
+- Preferências RGPD.
+- Privacidade da galeria pública.
+- Segurança / alterar password.
+- Terminar sessão.
+
+========================
+3. TALENT MANAGER
+========================
+
+Criar ecrãs para Talent Manager, adaptados a mobile.
+
+Bottom Navigation Talent Manager:
+- Dashboard
+- Validações
+- Relatórios
+- Utilizadores
+- Mais
+
+3.1 Dashboard Talent Manager
+- KPIs:
+  - candidaturas pendentes
+  - candidaturas submetidas
+  - em validação
+  - aprovadas/rejeitadas
+  - badges próximos de expiração
+  - total de consultores
+- Gráficos compactos:
+  - badges por mês
+  - badges por área
+  - distribuição por nível
+- Lista de candidaturas recentes.
+- Alertas importantes.
+- CTA “Ver validações pendentes”.
+
+3.2 Lista de Validações
+- Candidaturas submetidas por consultores.
+- O Talent Manager vê todas as submissões, independentemente de área/service line.
+- Tabs:
+  - Pendentes
+  - Em Validação
+  - Devolvidas
+  - Fechadas
+- Pesquisa por consultor/badge.
+- Filtros por área, nível, data, estado.
+- Cards com SLA visual.
+
+3.3 Detalhe da Validação
+- Dados do consultor.
+- Dados do badge.
+- Requisitos e evidências submetidas.
+- Preview/download de evidências.
+- Histórico.
+- Comentários anteriores.
+- Ações:
+  - “Enviar para Service Line Leader”
+  - “Devolver ao Consultor”
+- Ao devolver, abrir bottom sheet com campo obrigatório de comentário.
+- Ao enviar para SLL, confirmar ação.
+- Estado muda para “Em Validação”.
+- Registar ação no histórico.
+
+3.4 Histórico de Processos
+- Timeline auditável por candidatura.
+- Mostrar quem fez cada ação, data, comentário e estado.
+
+3.5 Relatórios Talent Manager
+- Filtros por:
+  - área
+  - service line
+  - período
+  - nível
+  - estado
+- KPIs:
+  - % badges com visão mensal
+  - nº badges por range de datas
+  - nº badges por learning path
+  - nº badges por nível
+  - nº utilizadores registados
+- Exportações:
+  - pedidos Excel/PDF
+  - badges Excel/PDF
+  - consultores Excel/PDF
+  - aprovações Excel/PDF
+  - rejeições Excel/PDF
+
+3.6 Utilizadores / Consultores
+- Lista de consultores.
+- Pesquisa e filtros.
+- Card com:
+  - nome
+  - área
+  - service line
+  - badges obtidos
+  - pontos
+  - estado
+- Detalhe do consultor:
+  - perfil
+  - badges
+  - timeline
+  - candidaturas
+  - progresso
+  - métricas
+
+3.7 Badges Próximos de Expiração
+- Lista de badges próximos da data de expiração.
+- Filtros por área e período.
+- Notificar consultor.
+
+3.8 Assinatura de Email / Badges
+- Configuração semelhante ao consultor, se aplicável.
+
+========================
+4. SERVICE LINE LEADER
+========================
+
+Criar ecrãs para Service Line Leader.
+
+Bottom Navigation Service Line Leader:
+- Dashboard
+- Aprovações
+- Ranking
+- Relatórios
+- Mais
+
+4.1 Dashboard Service Line Leader
+- Focado na sua Service Line/Área.
+- KPIs:
+  - consultores da service line
+  - candidaturas em validação
+  - badges atribuídos
+  - pontos totais da equipa
+  - SLA em risco
+- Gráficos:
+  - progresso da equipa
+  - badges por nível
+  - badges por consultor
+  - evolução mensal
+- Ranking resumido da Service Line.
+- Alertas de SLA.
+
+4.2 Lista de Aprovações
+- Candidaturas enviadas pelo Talent Manager.
+- Apenas da sua Service Line/Área.
+- Tabs:
+  - Em Validação
+  - Aprovadas
+  - Rejeitadas
+  - Devolvidas
+- Cards com consultor, badge, nível, prazo/SLA e estado.
+
+4.3 Detalhe de Aprovação
+- Dados do consultor.
+- Badge e requisitos.
+- Evidências.
+- Comentários do Talent Manager.
+- Histórico.
+- Ações:
+  - Aprovar
+  - Rejeitar
+  - Send Back / Devolver ao consultor
+- Aprovar:
+  - badge fica disponível/publicável
+  - estado Fechado
+  - mostrar mensagem de sucesso
+- Rejeitar:
+  - comentário obrigatório
+  - email/notificação ao consultor
+  - estado Fechado
+- Send Back:
+  - comentário obrigatório
+  - devolve ao consultor
+  - estado Open
+
+4.4 Ranking da Service Line
+- Ranking de consultores da sua área.
+- Pontos, badges, níveis.
+- Comparação entre consultores com a mesma experiência e área.
+- Top performers destacados.
+
+4.5 Relatórios Service Line
+- Badges atribuídos na área/período.
+- Exportação:
+  - pedidos Excel/PDF
+  - badges Excel/PDF
+  - consultores Excel/PDF
+  - aprovações Excel/PDF
+- Filtros por data, nível, consultor, badge.
+
+4.6 Métricas Comparativas
+- Comparar consultores.
+- Cards de performance.
+- Gráficos compactos.
+- Usar visual mobile adequado, sem tabelas enormes.
+
+========================
+5. ADMINISTRADOR / GESTOR
+========================
+
+Criar ecrãs para Administrador.
+
+Bottom Navigation Admin:
+- Dashboard
+- Utilizadores
+- Badges
+- Estrutura
+- Mais
+
+5.1 Dashboard Admin
+- KPIs globais:
+  - total utilizadores
+  - total badges
+  - candidaturas pendentes
+  - badges atribuídos
+  - avisos ativos
+  - SLA ultrapassado
+- Gráficos:
+  - badges por mês
+  - badges por learning path
+  - badges por nível
+  - utilizadores registados
+- Alertas de sistema.
+- Ações rápidas:
+  - criar utilizador
+  - criar badge
+  - criar aviso
+  - configurar SLA
+
+5.2 Gestão de Utilizadores
+- Lista de utilizadores.
+- Pesquisa.
+- Filtros por role, área, service line, estado.
+- Card com nome, email, perfil, área, estado.
+- Criar utilizador:
+  - nome
+  - email
+  - role
+  - service line
+  - área
+  - estado ativo/inativo
+  - obrigar alteração de password
+- Editar utilizador.
+- Ativar/desativar utilizador.
+- Gerir permissões.
+
+5.3 Gestão de Badges
+- Lista de badges.
+- Pesquisa e filtros.
+- Criar badge:
+  - título
+  - descrição
+  - imagem
+  - learning path
+  - service line
+  - área
+  - nível A/B/C/D/E
+  - pontos
+  - expiração opcional
+  - intervalo temporal opcional
+  - competências certificadas
+  - requisitos/evidências necessárias
+- Editar badge.
+- Eliminar/desativar badge.
+- Preview do badge.
+
+5.4 Gestão da Estrutura
+- Learning Paths
+- Service Lines
+- Áreas
+- Níveis
+- Requisitos
+- Criar/editar/eliminar cada entidade.
+- Mostrar hierarquia:
+  Learning Path > Service Line > Área > Nível > Badge/Requisitos
+- Usar accordion/tree view mobile.
+
+5.5 Gestão de Requisitos
+- Criar requisito.
+- Associar requisito a badge/nível.
+- Campos:
+  - título
+  - descrição
+  - tipo de evidência
+  - obrigatório/opcional
+  - ordem
+- Editar/remover.
+
+5.6 Gestão de Avisos / Informações
+- Lista de avisos ativos/inativos.
+- Criar aviso:
+  - título
+  - mensagem
+  - público-alvo
+  - ativo/inativo
+  - data início/fim
+  - push notification sim/não
+- Editar/desativar.
+- Preview como será visto pelo utilizador.
+
+5.7 Configuração de Notificações
+- Tipos de notificações:
+  - aprovação
+  - rejeição
+  - send back
+  - candidatura submetida
+  - SLA
+  - expiração
+  - lembrete
+  - avisos
+- Ativar/desativar email, push e in-app.
+- Templates de email/notificação.
+- Preview.
+
+5.8 Políticas RGPD
+- Lista de políticas.
+- Criar/editar política.
+- Versão.
+- Estado ativo/inativo.
+- Texto da política.
+- Ver utilizadores que aceitaram.
+- Histórico de versões.
+
+5.9 Gestão de SLAs
+- Configurar SLA para:
+  - Talent Manager
+  - Service Line Leader
+- Campos:
+  - número de horas/dias
+  - ativo/inativo
+  - ações quando ultrapassa SLA
+  - notificar por email
+  - notificar por push
+  - notificar Teams/Slack
+- Lista de incumprimentos SLA.
+- Alertas visuais.
+
+5.10 Integrações
+- Cards para:
+  - Teams
+  - Slack
+  - Softinsa.pt
+  - LinkedIn
+- Estado conectado/desconectado.
+- Configurar webhook.
+- Testar integração.
+- Último envio/erro.
+
+5.11 Relatórios Admin
+- KPIs mínimos:
+  - % de badges com visão mensal
+  - nº de badges por range de datas
+  - nº de badges por learning path
+  - nº de badges por nível das learning paths
+  - nº de utilizadores registados
+- Exportações Excel/PDF.
+- Filtros globais.
+
+========================
+6. PÁGINA DE AVISOS
+========================
+
+Criar ecrã comum para todos os perfis:
+- Lista de avisos ativos.
+- Cards com título, data, categoria, mensagem.
+- Estado lido/não lido.
+- Filtros.
+- Detalhe do aviso.
+- Suporte a notificações push.
+
+========================
+7. IDIOMAS
+========================
+
+A app deve suportar 3 idiomas:
+- Português
+- Inglês
+- Espanhol
+
+Criar ecrã de seleção de idioma.
+Mostrar que textos principais podem mudar.
+No design, usar Português como idioma principal, mas prever seletor e estados.
+
+========================
+8. ESTADOS E MICROINTERAÇÕES
+========================
+
+Criar variantes/frames para:
+- loading skeleton
+- empty states
+- erro de carregamento
+- sem internet
+- sucesso
+- confirmação
+- formulário com erros
+- upload em progresso
+- upload concluído
+- badge conquistado
+- candidatura aprovada
+- candidatura rejeitada
+- notificação nova
+- SLA ultrapassado
+
+Adicionar microinterações/protótipo:
+- transições entre páginas
+- abrir bottom sheet de filtros
+- abrir modal de confirmação
+- abrir menu lateral
+- marcar notificação como lida
+- submeter candidatura
+- aprovar/rejeitar/devolver candidatura
+- publicar badge
+- partilhar badge
+
+========================
+9. PROTÓTIPO INTERATIVO
+========================
+
+Criar protótipo navegável com estes fluxos principais:
+
+Fluxo Consultor:
+Login > Dashboard > Catálogo > Detalhe Badge > Candidatar > Upload Evidências > Submeter > Candidaturas > Detalhe > Estado/Histórico > Badge Aprovado > Certificado > Partilhar LinkedIn
+
+Fluxo Talent Manager:
+Login > Dashboard TM > Validações > Detalhe Candidatura > Ver Evidências > Enviar para SLL / Devolver > Histórico
+
+Fluxo Service Line Leader:
+Login > Dashboard SLL > Aprovações > Detalhe > Aprovar / Rejeitar / Send Back > Confirmação
+
+Fluxo Admin:
+Login > Dashboard Admin > Criar Utilizador > Criar Badge > Gerir Estrutura > Configurar SLA > Criar Aviso > Ver Relatórios
+
+Fluxo Público:
+Abrir link de verificação > Página pública do badge > Galeria pública do consultor
+
+========================
+10. REGRAS DE DESIGN MOBILE
+========================
+
+- Evitar tabelas largas; transformar tabelas em cards filtráveis.
+- Usar bottom sheets para filtros e ações.
+- Usar chips para estados e níveis.
+- Usar tabs para separar estados.
+- Usar cards expansíveis para detalhes longos.
+- Usar botões fixos no fundo quando a ação principal for importante.
+- Garantir contraste e acessibilidade.
+- Garantir que todos os botões têm área tocável confortável.
+- Criar layout clean, sem excesso de informação por ecrã.
+- Sempre que houver muitos dados, criar resumo + detalhe.
+- Manter a experiência visual parecida com a Web, mas adaptada a toque.
+
+========================
+11. OUTPUT ESPERADO NO FIGMA
+========================
+
+Organizar o ficheiro Figma em páginas:
+
+1. Cover
+2. Design System
+3. Components
+4. Auth
+5. Consultant App
+6. Talent Manager App
+7. Service Line Leader App
+8. Admin App
+9. Public Pages
+10. Prototype Flows
+
+Na página Design System, criar:
+- cores
+- tipografia
+- espaçamentos
+- sombras
+- radius
+- botões
+- inputs
+- chips
+- cards
+- icons
+- status colors
+- badge styles
+
+Na página Components, criar todos os componentes reutilizáveis com variantes.
+
+Na página dos perfis, criar todos os ecrãs em sequência lógica.
+
+O resultado deve parecer uma app real pronta para desenvolvimento em React Native/Expo, mantendo a mesma identidade da plataforma Web PINT.
