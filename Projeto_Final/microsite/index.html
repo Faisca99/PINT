@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BadgeSoftinsa — Plataforma de Badges da Softinsa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Design tokens (identical to globals.css) ───────────────────── */
+    :root {
+      --primary:        hsl(217, 71%, 28%);
+      --primary-light:  hsl(217, 71%, 38%);
+      --accent:         hsl(199, 89%, 48%);
+      --accent-dark:    hsl(199, 89%, 38%);
+      --bg:             hsl(220, 20%, 97%);
+      --bg-card:        hsl(0, 0%, 100%);
+      --text:           hsl(220, 40%, 13%);
+      --text-muted:     hsl(220, 10%, 46%);
+      --border:         hsl(220, 13%, 89%);
+      --sidebar-bg:     hsl(220, 40%, 13%);
+      --success:        hsl(152, 60%, 40%);
+      --warning:        hsl(38, 92%, 50%);
+
+      --grad-hero:   linear-gradient(160deg, hsl(220,40%,10%), hsl(217,71%,28%), hsl(199,89%,38%));
+      --grad-primary:linear-gradient(135deg, hsl(217,71%,28%), hsl(199,89%,48%));
+      --grad-card:   linear-gradient(145deg, #fff, hsl(220,20%,97%));
+
+      --shadow-sm: 0 1px 3px hsl(220 40% 13% / .04);
+      --shadow-md: 0 4px 14px -2px hsl(220 40% 13% / .08);
+      --shadow-lg: 0 10px 30px -6px hsl(220 40% 13% / .12);
+      --radius: .625rem;
+      --font: 'IBM Plex Sans', system-ui, sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── Reset ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; }
+
+    /* ── Nav ────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--sidebar-bg);
+      backdrop-filter: blur(8px);
+      padding: .875rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px hsl(220 40% 5% / .4);
+    }
+    .nav-brand { display: flex; align-items: center; gap: .75rem; }
+    .nav-logo {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--grad-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700; color: #fff;
+    }
+    .nav-title { font-size: 1.05rem; font-weight: 600; color: #fff; }
+    .nav-subtitle { font-size: .7rem; color: hsl(220,15%,60%); letter-spacing: .04em; text-transform: uppercase; }
+    .nav-links { display: flex; gap: 1.75rem; }
+    .nav-links a {
+      font-size: .875rem; font-weight: 500; color: hsl(220,15%,70%);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent); color: #fff;
+      padding: .45rem 1.1rem; border-radius: 6px;
+      font-size: .875rem; font-weight: 600;
+      transition: background .2s, transform .15s;
+    }
+    .nav-cta:hover { background: var(--accent-dark); transform: translateY(-1px); }
+
+    /* ── Hero ───────────────────────────────────────────────────────── */
+    .hero {
+      background: var(--grad-hero);
+      padding: 6rem 2rem 5rem;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, hsl(199 89% 48% / .15), transparent);
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: hsl(199 89% 48% / .15); border: 1px solid hsl(199 89% 48% / .3);
+      color: var(--accent); padding: .35rem .9rem; border-radius: 999px;
+      font-size: .8rem; font-weight: 600; letter-spacing: .04em;
+      text-transform: uppercase; margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700;
+      color: #fff; line-height: 1.15; margin-bottom: 1rem;
+    }
+    .hero h1 span {
+      background: linear-gradient(90deg, var(--accent), hsl(199,89%,68%));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero p {
+      max-width: 640px; margin: 0 auto 2.5rem;
+      font-size: 1.1rem; color: hsl(220,15%,70%); line-height: 1.7;
+    }
+    .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--grad-primary); color: #fff;
+      padding: .75rem 1.75rem; border-radius: 8px;
+      font-weight: 600; font-size: .95rem;
+      box-shadow: 0 4px 14px hsl(199 89% 48% / .3);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px hsl(199 89% 48% / .4); }
+    .btn-outline {
+      border: 1px solid hsl(220,15%,40%); color: hsl(220,15%,80%);
+      padding: .75rem 1.75rem; border-radius: 8px;
+      font-weight: 600; font-size: .95rem;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* hero stats */
+    .hero-stats {
+      display: flex; gap: 2.5rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 3.5rem; padding-top: 3rem;
+      border-top: 1px solid hsl(220,15%,25%);
+    }
+    .hero-stat strong { display: block; font-size: 1.75rem; font-weight: 700; color: #fff; }
+    .hero-stat span { font-size: .8rem; color: hsl(220,15%,60%); }
+
+    /* ── Section commons ────────────────────────────────────────────── */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: .5rem;
+    }
+    .section-title { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 700; color: var(--text); margin-bottom: .75rem; }
+    .section-desc { color: var(--text-muted); font-size: 1rem; line-height: 1.7; max-width: 620px; }
+
+    /* ── About ──────────────────────────────────────────────────────── */
+    #about { background: var(--bg-card); border-bottom: 1px solid var(--border); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+    @media(max-width:720px){ .about-grid { grid-template-columns: 1fr; gap: 2rem; } }
+    .about-text p { color: var(--text-muted); line-height: 1.75; margin-bottom: 1rem; }
+    .about-list { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+    .about-list li {
+      display: flex; align-items: flex-start; gap: .6rem;
+      color: var(--text-muted); font-size: .95rem; line-height: 1.5;
+    }
+    .about-list li::before { content: '✦'; color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+    .about-visual {
+      background: var(--grad-primary);
+      border-radius: 16px; padding: 2.5rem;
+      display: flex; flex-direction: column; gap: 1rem;
+      box-shadow: var(--shadow-lg);
+    }
+    .mini-card {
+      background: hsl(0 0% 100% / .12); border-radius: 10px; padding: 1rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .mini-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      background: hsl(0 0% 100% / .15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .mini-card-title { font-size: .875rem; font-weight: 600; color: #fff; }
+    .mini-card-sub { font-size: .75rem; color: hsl(0 0% 100% / .65); }
+
+    /* ── Features ───────────────────────────────────────────────────── */
+    #features { background: var(--bg); }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .feature-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .feature-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: var(--grad-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; margin-bottom: 1rem;
+    }
+    .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: .5rem; }
+    .feature-card p { font-size: .875rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── Profiles ───────────────────────────────────────────────────── */
+    #profiles { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .profiles-tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 2rem; margin-bottom: 2rem; }
+    .tab-btn {
+      padding: .45rem 1.1rem; border-radius: 6px; font-size: .875rem; font-weight: 500;
+      border: 1px solid var(--border); background: transparent; color: var(--text-muted);
+      cursor: pointer; transition: all .2s;
+    }
+    .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .tab-btn:not(.active):hover { border-color: var(--accent); color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: .75rem; }
+    .req-item {
+      display: flex; align-items: flex-start; gap: .6rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: .75rem 1rem;
+      font-size: .85rem; color: var(--text); line-height: 1.5;
+    }
+    .req-item .check { color: var(--success); flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+
+    /* ── Tech ───────────────────────────────────────────────────────── */
+    #tech { background: var(--bg); }
+    .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 3rem; }
+    .tech-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1.25rem; text-align: center;
+      box-shadow: var(--shadow-sm); transition: box-shadow .2s;
+    }
+    .tech-card:hover { box-shadow: var(--shadow-md); }
+    .tech-badge {
+      display: inline-block; padding: .25rem .65rem; border-radius: 999px;
+      font-size: .7rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      margin-bottom: .75rem;
+    }
+    .tech-badge.front  { background: hsl(217 71% 28% / .1);  color: var(--primary); }
+    .tech-badge.back   { background: hsl(152 60% 40% / .1);  color: var(--success); }
+    .tech-badge.db     { background: hsl(38 92% 50%  / .1);  color: var(--warning); }
+    .tech-badge.mobile { background: hsl(199 89% 48% / .1);  color: var(--accent);  }
+    .tech-card h4 { font-size: .95rem; font-weight: 600; margin-bottom: .25rem; }
+    .tech-card p { font-size: .78rem; color: var(--text-muted); }
+
+    /* ── Architecture ───────────────────────────────────────────────── */
+    #architecture { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .arch-diagram {
+      margin-top: 3rem;
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 0;
+    }
+    .arch-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem 2rem; text-align: center; min-width: 160px;
+      box-shadow: var(--shadow-sm);
+    }
+    .arch-box .arch-icon { font-size: 2rem; margin-bottom: .5rem; }
+    .arch-box h4 { font-size: .9rem; font-weight: 600; }
+    .arch-box p { font-size: .75rem; color: var(--text-muted); margin-top: .2rem; }
+    .arch-arrow {
+      color: var(--accent); font-size: 1.5rem; margin: 0 .5rem;
+      display: flex; align-items: center;
+    }
+    @media(max-width:600px){ .arch-arrow { transform: rotate(90deg); margin: .5rem 0; } }
+
+    /* ── Access ─────────────────────────────────────────────────────── */
+    #access { background: var(--bg); }
+    .access-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .access-card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px;
+      overflow: hidden; box-shadow: var(--shadow-sm);
+    }
+    .access-header {
+      padding: 1rem 1.25rem;
+      background: var(--grad-primary); color: #fff;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .access-header .role-icon { font-size: 1.2rem; }
+    .access-header h3 { font-size: .95rem; font-weight: 600; }
+    .access-body { padding: 1.25rem; }
+    .cred-row { display: flex; justify-content: space-between; margin-bottom: .6rem; font-size: .875rem; }
+    .cred-label { color: var(--text-muted); }
+    .cred-value {
+      font-family: var(--font-mono); font-size: .8rem;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 4px; padding: .15rem .5rem; color: var(--text);
+    }
+
+    /* ── Team ───────────────────────────────────────────────────────── */
+    #team { background: var(--bg-card); border-top: 1px solid var(--border); }
+    .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .team-card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.75rem 1.25rem; text-align: center;
+      box-shadow: var(--shadow-sm); transition: box-shadow .2s, transform .2s;
+    }
+    .team-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .team-avatar {
+      width: 60px; height: 60px; border-radius: 50%; margin: 0 auto .9rem;
+      background: var(--grad-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; font-weight: 700; color: #fff;
+    }
+    .team-card h4 { font-size: .95rem; font-weight: 600; margin-bottom: .25rem; }
+    .team-card .role { font-size: .78rem; color: var(--accent); font-weight: 500; }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      background: var(--sidebar-bg); color: hsl(220,15%,60%);
+      padding: 2.5rem 2rem; text-align: center;
+    }
+    footer .footer-brand { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: .4rem; }
+    footer p { font-size: .825rem; }
+    footer a { color: var(--accent); }
+
+    /* ── Animations ─────────────────────────────────────────────────── */
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+    .fade-up { opacity: 0; animation: fadeUp .6s ease forwards; }
+    .fade-up:nth-child(2) { animation-delay: .1s; }
+    .fade-up:nth-child(3) { animation-delay: .2s; }
+    .fade-up:nth-child(4) { animation-delay: .3s; }
+
+    /* ── Mobile Nav ─────────────────────────────────────────────────── */
+    @media(max-width:700px) {
+      .nav-links { display: none; }
+      nav { padding: .875rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">B</div>
+    <div>
+      <div class="nav-title">BadgeSoftinsa</div>
+      <div class="nav-subtitle">Plataforma de Badges</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="#about">Sobre</a>
+    <a href="#features">Funcionalidades</a>
+    <a href="#profiles">Perfis</a>
+    <a href="#tech">Tecnologia</a>
+    <a href="#access">Acesso</a>
+    <a href="#team">Equipa</a>
+  </div>
+  <a href="#access" class="nav-cta">Aceder →</a>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-badge">✦ PINT 2025–2026 · Softinsa</div>
+  <h1 class="fade-up">
+    Plataforma de<br><span>Badges Digitais</span>
+  </h1>
+  <p class="fade-up">
+    Sistema de gestão de credenciais e gamificação profissional para os
+    consultores da Softinsa — similar ao Credly, desenvolvido de raiz.
+  </p>
+  <div class="hero-btns fade-up">
+    <a href="#access" class="btn-primary">Aceder à Plataforma</a>
+    <a href="#features" class="btn-outline">Ver Funcionalidades</a>
+  </div>
+  <div class="hero-stats fade-up">
+    <div class="hero-stat"><strong>4</strong><span>Perfis de utilizador</span></div>
+    <div class="hero-stat"><strong>3</strong><span>Service Lines</span></div>
+    <div class="hero-stat"><strong>5</strong><span>Níveis por área</span></div>
+    <div class="hero-stat"><strong>3</strong><span>Idiomas</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════ ABOUT ═══════════════ -->
+<section id="about">
+  <div class="container">
+    <div class="section-label">Sobre o Projeto</div>
+    <h2 class="section-title">O que é a BadgeSoftinsa?</h2>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>
+          A Softinsa reconhece a importância da formação contínua e da certificação de
+          competências dos seus colaboradores. Este projeto nasce da necessidade de colmatar
+          a dificuldade em evidenciar e validar competências adquiridas.
+        </p>
+        <p>
+          A plataforma permite que consultores submetam evidências de formações externas
+          (Udemy, IBM, AWS, Microsoft, etc.) para obter badges digitais verificáveis,
+          organizados em Learning Paths com 5 níveis de progressão.
+        </p>
+        <ul class="about-list">
+          <li>Gestão de credenciais de competências verificadas</li>
+          <li>Sistema de gamificação para estimular a evolução profissional</li>
+          <li>Workflow de aprovação com Talent Manager e Service Line Leader</li>
+          <li>Certificados personalizados em PDF e partilha no LinkedIn</li>
+          <li>Dashboard com KPIs, ranking e recomendações inteligentes</li>
+        </ul>
+      </div>
+      <div class="about-visual">
+        <div class="mini-card">
+          <div class="mini-icon">🏅</div>
+          <div>
+            <div class="mini-card-title">Badge Júnior — OutSystems</div>
+            <div class="mini-card-sub">Hybrid Cloud · Nível A · 150 pts</div>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">🔍</div>
+          <div>
+            <div class="mini-card-title">Evidências Submetidas</div>
+            <div class="mini-card-sub">Em validação pelo Talent Manager</div>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">✅</div>
+          <div>
+            <div class="mini-card-title">Badge Aprovado</div>
+            <div class="mini-card-sub">Publicado · Link público gerado</div>
+          </div>
+        </div>
+        <div class="mini-card">
+          <div class="mini-icon">📤</div>
+          <div>
+            <div class="mini-card-title">Partilhado no LinkedIn</div>
+            <div class="mini-card-sub">Certificado PDF descarregado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">Funcionalidades</div>
+    <h2 class="section-title">Tudo numa só plataforma</h2>
+    <p class="section-desc">De ponta a ponta — desde a candidatura à verificação pública do badge.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3>Sistema de Gamificação</h3>
+        <p>Pontos por badge, conquistas especiais, ranking entre consultores e celebração de marcos alcançados.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Workflow de Aprovação</h3>
+        <p>Fluxo auditável com Talent Manager e Service Line Leader — histórico completo de cada decisão.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Dashboards & KPIs</h3>
+        <p>Relatórios por Learning Path, nível, período e utilizador. Exportação para Excel/PDF.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Verificação Pública</h3>
+        <p>Cada badge tem uma página pública com link único para verificar a autenticidade da certificação.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>App Mobile</h3>
+        <p>Aplicação móvel completa para consultores — submissão de evidências, notificações e badges.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌍</div>
+        <h3>Multilingue</h3>
+        <p>Disponível em Português, Inglês e Espanhol com seleção por utilizador.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📧</div>
+        <h3>Notificações & Email</h3>
+        <p>Emails de confirmação, notificações in-app de aprovação/rejeição e alertas de expiração.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>RGPD Compliant</h3>
+        <p>Aceitação de termos RGPD, comunicação HTTPS e configuração de políticas pelo administrador.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ PROFILES ═══════════════ -->
+<section id="profiles">
+  <div class="container">
+    <div class="section-label">Perfis de Utilizador</div>
+    <h2 class="section-title">Quatro perfis, uma plataforma</h2>
+    <p class="section-desc">Cada perfil tem o seu dashboard e conjunto de funcionalidades dedicadas.</p>
+
+    <div class="profiles-tabs">
+      <button class="tab-btn active" onclick="showTab('consultor', this)">Consultor</button>
+      <button class="tab-btn" onclick="showTab('talent', this)">Talent Manager</button>
+      <button class="tab-btn" onclick="showTab('sl', this)">Service Line Leader</button>
+      <button class="tab-btn" onclick="showTab('admin', this)">Administrador</button>
+    </div>
+
+    <div id="tab-consultor" class="tab-panel active">
+      <div class="req-item"><span class="check">✔</span> Dashboard pessoal com progresso nos Learning Paths</div>
+      <div class="req-item"><span class="check">✔</span> Catálogo de badges com pesquisa e filtros</div>
+      <div class="req-item"><span class="check">✔</span> Submissão de evidências (certificados, diplomas)</div>
+      <div class="req-item"><span class="check">✔</span> Visualização de status dos pedidos em tempo real</div>
+      <div class="req-item"><span class="check">✔</span> Sistema de pontos e conquistas especiais</div>
+      <div class="req-item"><span class="check">✔</span> Ranking entre consultores (leaderboard)</div>
+      <div class="req-item"><span class="check">✔</span> Download de certificado personalizado em PDF</div>
+      <div class="req-item"><span class="check">✔</span> Partilha de badge no LinkedIn</div>
+      <div class="req-item"><span class="check">✔</span> Galeria pública de badges obtidos</div>
+      <div class="req-item"><span class="check">✔</span> Recomendações de próximos badges</div>
+      <div class="req-item"><span class="check">✔</span> Lembretes de objetivos e prazos</div>
+      <div class="req-item"><span class="check">✔</span> Timeline de evolução profissional</div>
+    </div>
+
+    <div id="tab-talent" class="tab-panel">
+      <div class="req-item"><span class="check">✔</span> Dashboard com progresso de todos os consultores</div>
+      <div class="req-item"><span class="check">✔</span> Sistema de verificação de evidências</div>
+      <div class="req-item"><span class="check">✔</span> Validação e devolução de candidaturas</div>
+      <div class="req-item"><span class="check">✔</span> Relatórios de badges atribuídos por área/período</div>
+      <div class="req-item"><span class="check">✔</span> Exportação para Excel/PDF</div>
+      <div class="req-item"><span class="check">✔</span> Visualização de badges próximos da expiração</div>
+      <div class="req-item"><span class="check">✔</span> Histórico de candidaturas (quem aprovou/rejeitou)</div>
+      <div class="req-item"><span class="check">✔</span> Notificações de novos pedidos</div>
+    </div>
+
+    <div id="tab-sl" class="tab-panel">
+      <div class="req-item"><span class="check">✔</span> Dashboard com progresso dos consultores da SL</div>
+      <div class="req-item"><span class="check">✔</span> Validação final de candidaturas da sua área</div>
+      <div class="req-item"><span class="check">✔</span> Ranking de badges dos consultores da SL</div>
+      <div class="req-item"><span class="check">✔</span> Relatórios e exportações Excel/PDF</div>
+      <div class="req-item"><span class="check">✔</span> Gestão de badges especiais (Premium)</div>
+      <div class="req-item"><span class="check">✔</span> Histórico auditável de cada candidatura</div>
+    </div>
+
+    <div id="tab-admin" class="tab-panel">
+      <div class="req-item"><span class="check">✔</span> Gestão de utilizadores e permissões</div>
+      <div class="req-item"><span class="check">✔</span> Criar/editar/eliminar badges</div>
+      <div class="req-item"><span class="check">✔</span> Gerir Learning Paths / Service Lines / Áreas / Níveis</div>
+      <div class="req-item"><span class="check">✔</span> Configuração de pontos e expiração por badge</div>
+      <div class="req-item"><span class="check">✔</span> Configuração de notificações e políticas RGPD</div>
+      <div class="req-item"><span class="check">✔</span> Consultar e gerir todos os pedidos</div>
+      <div class="req-item"><span class="check">✔</span> Exportação de dados para Excel/PDF</div>
+      <div class="req-item"><span class="check">✔</span> Informações e avisos para todos os utilizadores</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ TECH ═══════════════ -->
+<section id="tech">
+  <div class="container">
+    <div class="section-label">Tecnologia</div>
+    <h2 class="section-title">Stack tecnológica</h2>
+    <p class="section-desc">Tecnologias modernas, robustas e prontas para produção.</p>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <span class="tech-badge front">Frontend</span>
+        <h4>Next.js 15</h4>
+        <p>App Router + TypeScript</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge front">Frontend</span>
+        <h4>Tailwind CSS</h4>
+        <p>+ shadcn/ui components</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge back">Backend</span>
+        <h4>NestJS</h4>
+        <p>REST API · TypeScript</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge db">Base de Dados</span>
+        <h4>PostgreSQL</h4>
+        <p>Neon · Cloud Serverless</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge mobile">Mobile</span>
+        <h4>React + Vite</h4>
+        <p>Simulado · iPhone 15 Pro</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge front">Frontend</span>
+        <h4>Framer Motion</h4>
+        <p>Animações fluidas</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge back">Backend</span>
+        <h4>JWT Auth</h4>
+        <p>Autenticação segura</p>
+      </div>
+      <div class="tech-card">
+        <span class="tech-badge front">Export</span>
+        <h4>jsPDF + xlsx</h4>
+        <p>Certificados e relatórios</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ARCHITECTURE ═══════════════ -->
+<section id="architecture">
+  <div class="container">
+    <div class="section-label">Arquitetura</div>
+    <h2 class="section-title">Como funciona</h2>
+    <div class="arch-diagram">
+      <div class="arch-box">
+        <div class="arch-icon">📱</div>
+        <h4>App Mobile</h4>
+        <p>React + Vite</p>
+      </div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-box" style="border-color: var(--accent); box-shadow: 0 0 0 2px hsl(199 89% 48% / .15);">
+        <div class="arch-icon">⚙️</div>
+        <h4>API NestJS</h4>
+        <p>REST · Port 3001</p>
+      </div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-box">
+        <div class="arch-icon">🗄️</div>
+        <h4>PostgreSQL</h4>
+        <p>Neon Cloud</p>
+      </div>
+      <div class="arch-arrow">⟷</div>
+      <div class="arch-box">
+        <div class="arch-icon">🖥️</div>
+        <h4>Web App</h4>
+        <p>Next.js 15</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ ACCESS ═══════════════ -->
+<section id="access">
+  <div class="container">
+    <div class="section-label">Credenciais de Acesso</div>
+    <h2 class="section-title">Testar a plataforma</h2>
+    <p class="section-desc">Utiliza as credenciais abaixo para explorar cada perfil da aplicação.</p>
+    <div class="access-grid">
+      <div class="access-card">
+        <div class="access-header">
+          <span class="role-icon">👤</span>
+          <h3>Consultor</h3>
+        </div>
+        <div class="access-body">
+          <div class="cred-row"><span class="cred-label">Email</span><span class="cred-value">abreu@softinsa.pt</span></div>
+          <div class="cred-row"><span class="cred-label">Password</span><span class="cred-value">Softinsa2025!</span></div>
+        </div>
+      </div>
+      <div class="access-card">
+        <div class="access-header">
+          <span class="role-icon">🔍</span>
+          <h3>Talent Manager</h3>
+        </div>
+        <div class="access-body">
+          <div class="cred-row"><span class="cred-label">Email</span><span class="cred-value">faisca@softinsa.pt</span></div>
+          <div class="cred-row"><span class="cred-label">Password</span><span class="cred-value">Softinsa2025!</span></div>
+        </div>
+      </div>
+      <div class="access-card">
+        <div class="access-header">
+          <span class="role-icon">🏢</span>
+          <h3>Service Line Leader</h3>
+        </div>
+        <div class="access-body">
+          <div class="cred-row"><span class="cred-label">Email</span><span class="cred-value">beselga@softinsa.pt</span></div>
+          <div class="cred-row"><span class="cred-label">Password</span><span class="cred-value">Softinsa2025!</span></div>
+        </div>
+      </div>
+      <div class="access-card">
+        <div class="access-header">
+          <span class="role-icon">⚙️</span>
+          <h3>Administrador</h3>
+        </div>
+        <div class="access-body">
+          <div class="cred-row"><span class="cred-label">Email</span><span class="cred-value">admin@softinsa.pt</span></div>
+          <div class="cred-row"><span class="cred-label">Password</span><span class="cred-value">Softinsa2025!</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- URL placeholders -->
+    <div style="margin-top:2rem; background: var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:1.5rem; box-shadow: var(--shadow-sm);">
+      <div class="section-label" style="margin-bottom:.75rem;">URLs de Acesso</div>
+      <div style="display:grid; gap:.75rem;">
+        <div class="cred-row" style="align-items:center;">
+          <span class="cred-label">🖥️ Aplicação Web</span>
+          <span class="cred-value" id="web-url">—</span>
+        </div>
+        <div class="cred-row" style="align-items:center;">
+          <span class="cred-label">📱 Aplicação Mobile</span>
+          <span class="cred-value" id="mobile-url">—</span>
+        </div>
+      </div>
+      <p style="font-size:.8rem; color:var(--text-muted); margin-top:1rem;">
+        ⚠️ Substitui os campos <strong>—</strong> acima com os URLs de deploy antes da entrega.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ TEAM ═══════════════ -->
+<section id="team">
+  <div class="container">
+    <div class="section-label">Equipa</div>
+    <h2 class="section-title">Quem desenvolveu</h2>
+    <p class="section-desc">Projeto Integrado · ESTGV · Engenharia Informática · 2025–2026</p>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">DS</div>
+        <h4>Daniel Santos</h4>
+        <div class="role">Programador Mobile</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">FA</div>
+        <h4>Francisco Abreu</h4>
+        <div class="role">Frontend Web</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">VR</div>
+        <h4>Victor Rocha</h4>
+        <div class="role">Programador Mobile</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">TS</div>
+        <h4>Tiago Silva</h4>
+        <div class="role">Backend · Base de Dados</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer>
+  <div class="footer-brand">BadgeSoftinsa</div>
+  <p>Projeto desenvolvido para a <strong style="color:#fff">Softinsa</strong> no âmbito de PINT 2025–2026 · ESTGV</p>
+  <p style="margin-top:.4rem; font-size:.75rem;">
+    Cliente: <a href="#">Softinsa (IBM Group)</a> · Docentes PINT · Engenharia Informática
+  </p>
+</footer>
+
+<!-- ═══════════════ SCRIPTS ═══════════════ -->
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Intersection Observer for fade-up on scroll
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting) { e.target.style.animationPlayState = 'running'; obs.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.feature-card, .tech-card, .team-card, .access-card, .req-item')
+    .forEach(el => { el.style.opacity='0'; el.style.animation='fadeUp .5s ease forwards paused'; obs.observe(el); });
+</script>
+</body>
+</html>
